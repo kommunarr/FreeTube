@@ -6,7 +6,7 @@ import FtToggleSwitch from '../ft-toggle-switch/ft-toggle-switch.vue'
 import FtSlider from '../ft-slider/ft-slider.vue'
 import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
 import FtPrompt from '../ft-prompt/ft-prompt.vue'
-import { colors } from '../../helpers/colors'
+import { colors, calculateColorContrastRatio } from '../../helpers/colors'
 
 export default defineComponent({
   name: 'ThemeSettings',
@@ -25,6 +25,21 @@ export default defineComponent({
       uiScaleStep: 5,
       disableSmoothScrollingToggleValue: false,
       showRestartPrompt: false,
+      colorValues: function () {
+        const cardColor = getComputedStyle(document.querySelector('.ft-card')).getPropertyValue('--card-bg-color').trim()
+
+        // while the AA standard is 4.5, this contrast checker seems to consistently give results that are 1.3 points below most other contrast checkers
+        const accessibleColors = colors.filter(color => (1.3 + calculateColorContrastRatio(cardColor, color.value)) >= 4.5)
+        return accessibleColors.map(color => color.name)
+      },
+
+      colorNames: function () {
+        return this.colorValues().map(colorVal => {
+          // add spaces before capital letters
+          const colorName = colorVal.replaceAll(/([A-Z])/g, ' $1').trim()
+          return this.$t(`Settings.Theme Settings.Main Color Theme.${colorName}`)
+        })
+      },
       restartPromptValues: [
         'yes',
         'no'
@@ -54,6 +69,14 @@ export default defineComponent({
 
     secColor: function () {
       return this.$store.getters.getSecColor
+    },
+
+    accessibilityOverrideMainColor: function () {
+      return this.$store.getters.getAccessibilityOverrideMainColor
+    },
+
+    accessibilityOverrideSecColor: function () {
+      return this.$store.getters.getAccessibilityOverrideSecColor
     },
 
     isSideNavOpen: function () {
@@ -102,17 +125,6 @@ export default defineComponent({
       ]
     },
 
-    colorValues: function () {
-      return colors.map(color => color.name)
-    },
-
-    colorNames: function () {
-      return this.colorValues.map(colorVal => {
-        // add spaces before capital letters
-        const colorName = colorVal.replaceAll(/([A-Z])/g, ' $1').trim()
-        return this.$t(`Settings.Theme Settings.Main Color Theme.${colorName}`)
-      })
-    },
     usingElectron: function () {
       return process.env.IS_ELECTRON
     }
@@ -150,11 +162,24 @@ export default defineComponent({
       })
     },
 
+    handleBaseThemeChange: function (value) {
+      this.updateBaseTheme(value).then(() => {
+        const colorValues = this.colorValues()
+        const accessibilityOverrideMainColor = !colorValues.includes(this.mainColor) ? colorValues[0] : ''
+        const accessibilityOverrideSecColor = !colorValues.includes(this.secColor) ? colorValues[1] : ''
+
+        this.updateAccessibilityOverrideMainColor(accessibilityOverrideMainColor)
+        this.updateAccessibilityOverrideSecColor(accessibilityOverrideSecColor)
+      })
+    },
+
     ...mapActions([
       'updateBarColor',
       'updateBaseTheme',
       'updateMainColor',
       'updateSecColor',
+      'updateAccessibilityOverrideMainColor',
+      'updateAccessibilityOverrideSecColor',
       'updateExpandSideBar',
       'updateUiScale',
       'updateDisableSmoothScrolling',

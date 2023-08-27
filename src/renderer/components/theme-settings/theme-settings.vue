@@ -57,20 +57,20 @@
         :value="baseTheme"
         :select-names="baseThemeNames"
         :select-values="baseThemeValues"
-        @change="updateBaseTheme"
+        @change="handleBaseThemeChange"
       />
       <ft-select
         :placeholder="$t('Settings.Theme Settings.Main Color Theme.Main Color Theme')"
-        :value="mainColor"
-        :select-names="colorNames"
-        :select-values="colorValues"
+        :value="accessibilityOverrideMainColor || mainColor"
+        :select-names="colorNames()"
+        :select-values="colorValues()"
         @change="updateMainColor"
       />
       <ft-select
         :placeholder="$t('Settings.Theme Settings.Secondary Color Theme')"
-        :value="secColor"
-        :select-names="colorNames"
-        :select-values="colorValues"
+        :value="accessibilityOverrideSecColor || secColor"
+        :select-names="colorNames()"
+        :select-values="colorValues()"
         @change="updateSecColor"
       />
     </ft-flex-box>
