@@ -14,7 +14,7 @@ import 'videojs-mobile-ui'
 import 'videojs-mobile-ui/dist/videojs-mobile-ui.css'
 import { IpcChannels } from '../../../constants'
 import { sponsorBlockSkipSegments } from '../../helpers/sponsorblock'
-import { calculateColorLuminance, colors } from '../../helpers/colors'
+import { getColorContrastingWith, colors } from '../../helpers/colors'
 import { pathExists } from '../../helpers/filesystem'
 import {
   copyToClipboard,
@@ -1449,7 +1449,7 @@ export default defineComponent({
 
         const colorValue = colors.find(color => color.name === currentTheme).value
 
-        const themeTextColor = calculateColorLuminance(colorValue)
+        const themeTextColor = getColorContrastingWith(colorValue)
 
         loopButton.classList.add('vjs-icon-loop-active')
 

@@ -5,7 +5,7 @@ import FtProfileEdit from '../../components/ft-profile-edit/ft-profile-edit.vue'
 import FtProfileChannelList from '../../components/ft-profile-channel-list/ft-profile-channel-list.vue'
 import FtProfileFilterChannelsList from '../../components/ft-profile-filter-channels-list/ft-profile-filter-channels-list.vue'
 import { MAIN_PROFILE_ID } from '../../../constants'
-import { calculateColorLuminance, getRandomColor } from '../../helpers/colors'
+import { getColorContrastingWith, getRandomColor } from '../../helpers/colors'
 import { showToast } from '../../helpers/utils'
 
 export default defineComponent({
@@ -60,7 +60,7 @@ export default defineComponent({
     if (profileType === 'newProfile') {
       this.isNew = true
       const bgColor = getRandomColor()
-      const textColor = calculateColorLuminance(bgColor)
+      const textColor = getColorContrastingWith(bgColor)
       this.profile = {
         name: '',
         bgColor: bgColor,

@@ -1,6 +1,6 @@
 import { MAIN_PROFILE_ID } from '../../../constants'
 import { DBProfileHandlers } from '../../../datastores/handlers/index'
-import { calculateColorLuminance, getRandomColor } from '../../helpers/colors'
+import { getColorContrastingWith, getRandomColor } from '../../helpers/colors'
 import { deepCopy } from '../../helpers/utils'
 
 const state = {
@@ -55,7 +55,7 @@ const actions = {
     if (profiles.length === 0) {
       // Create a default profile and persist it
       const randomColor = getRandomColor()
-      const textColor = calculateColorLuminance(randomColor)
+      const textColor = getColorContrastingWith(randomColor)
       const defaultProfile = {
         _id: MAIN_PROFILE_ID,
         name: defaultName,

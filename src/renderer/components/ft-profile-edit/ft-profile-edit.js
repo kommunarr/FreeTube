@@ -6,7 +6,7 @@ import FtFlexBox from '../../components/ft-flex-box/ft-flex-box.vue'
 import FtInput from '../../components/ft-input/ft-input.vue'
 import FtButton from '../../components/ft-button/ft-button.vue'
 import { MAIN_PROFILE_ID } from '../../../constants'
-import { calculateColorLuminance, colors } from '../../helpers/colors'
+import { getColorContrastingWith, colors } from '../../helpers/colors'
 import { showToast } from '../../helpers/utils'
 
 export default defineComponent({
@@ -69,7 +69,7 @@ export default defineComponent({
   },
   watch: {
     profileBgColor: function (val) {
-      this.profileTextColor = calculateColorLuminance(val)
+      this.profileTextColor = getColorContrastingWith(val)
     }
   },
   created: function () {

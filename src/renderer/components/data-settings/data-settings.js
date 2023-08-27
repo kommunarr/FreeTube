@@ -6,7 +6,7 @@ import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
 import FtPrompt from '../ft-prompt/ft-prompt.vue'
 import { MAIN_PROFILE_ID } from '../../../constants'
 
-import { calculateColorLuminance, getRandomColor } from '../../helpers/colors'
+import { getColorContrastingWith, getRandomColor } from '../../helpers/colors'
 import {
   copyToClipboard,
   deepCopy,
@@ -984,7 +984,7 @@ export default defineComponent({
           let index = convertedData.findIndex(p => p.name === profile.value)
           if (index === -1) { // profile doesn't exist yet
             const randomBgColor = getRandomColor()
-            const contrastyTextColor = calculateColorLuminance(randomBgColor)
+            const contrastyTextColor = getColorContrastingWith(randomBgColor)
             convertedData.push({
               name: profile.value,
               bgColor: randomBgColor,
