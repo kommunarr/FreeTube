@@ -171,6 +171,8 @@ const state = {
   baseTheme: 'system',
   mainColor: 'Red',
   secColor: 'Blue',
+  accessibilityOverrideMainColor: '',
+  accessibilityOverrideSecColor: '',
   defaultCaptionSettings: '{}',
   defaultInterval: 5,
   defaultPlayback: 1,

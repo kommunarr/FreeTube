@@ -102,6 +102,14 @@ export default defineComponent({
       return this.$store.getters.getSecColor
     },
 
+    accessibilityOverrideMainColor: function () {
+      return this.$store.getters.getAccessibilityOverrideMainColor
+    },
+
+    accessibilityOverrideSecColor: function () {
+      return this.$store.getters.getAccessibilityOverrideSecColor
+    },
+
     locale: function() {
       return this.$i18n.locale.replace('_', '-')
     },
@@ -129,6 +137,10 @@ export default defineComponent({
     mainColor: 'checkThemeSettings',
 
     secColor: 'checkThemeSettings',
+
+    accessibilityOverrideMainColor: 'checkThemeSettings',
+
+    accessibilityOverrideSecColor: 'checkThemeSettings',
 
     locale: 'setLocale',
 
@@ -185,16 +197,16 @@ export default defineComponent({
     checkThemeSettings: function () {
       const theme = {
         baseTheme: this.baseTheme || 'dark',
-        mainColor: this.mainColor || 'mainRed',
-        secColor: this.secColor || 'secBlue'
+        mainColor: this.accessibilityOverrideMainColor || this.mainColor || 'mainRed',
+        secColor: this.accessibilityOverrideSecColor || this.secColor || 'secBlue'
       }
 
       this.updateTheme(theme)
     },
 
     updateTheme: function (theme) {
-      document.body.className = `${theme.baseTheme} main${theme.mainColor} sec${theme.secColor}`
       document.body.dataset.systemTheme = this.systemTheme
+      document.body.className = `${theme.baseTheme} main${theme.mainColor} sec${theme.secColor}`
     },
 
     checkForNewUpdates: function () {
@@ -536,7 +548,9 @@ export default defineComponent({
       'setupListenersToSyncWindows',
       'updateBaseTheme',
       'updateMainColor',
-      'updateSecColor'
+      'updateSecColor',
+      'updateAccessibilityOverrideMainColor',
+      'updateAccessibilityOverrideSecColor'
     ])
   }
 })
