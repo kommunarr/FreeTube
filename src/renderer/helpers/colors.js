@@ -1,3 +1,5 @@
+import { hex } from 'wcag-contrast'
+
 export const colors = [
   { name: 'Red', value: '#d50000' },
   { name: 'Pink', value: '#C51162' },
@@ -48,21 +50,20 @@ export function getRandomColor() {
   return colors[randomInt].value
 }
 
+export function calculateColorContrastRatio(colorValue1, colorValue2) {
+  return hex(colorValue1, colorValue2)
+}
+
 export function getColorContrastingWith(colorValue) {
-  const luminance = calculateColorLuminance(colorValue)
+  const cutHex = colorValue.substring(1, 7)
+  const colorValueR = parseInt(cutHex.substring(0, 2), 16)
+  const colorValueG = parseInt(cutHex.substring(2, 4), 16)
+  const colorValueB = parseInt(cutHex.substring(4, 6), 16)
+  const luminance = (0.299 * colorValueR + 0.587 * colorValueG + 0.114 * colorValueB) / 255
 
   if (luminance > 0.5) {
     return '#000000'
   } else {
     return '#FFFFFF'
   }
-}
-
-export function calculateColorLuminance(colorValue) {
-  const cutHex = colorValue.substring(1, 7)
-  const colorValueR = parseInt(cutHex.substring(0, 2), 16)
-  const colorValueG = parseInt(cutHex.substring(2, 4), 16)
-  const colorValueB = parseInt(cutHex.substring(4, 6), 16)
-
-  return (0.299 * colorValueR + 0.587 * colorValueG + 0.114 * colorValueB) / 255
 }
