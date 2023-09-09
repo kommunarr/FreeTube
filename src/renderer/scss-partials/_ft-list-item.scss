@@ -78,6 +78,7 @@ $watched-transition-duration: 0.5s;
     .videoWatched,
     .videoDuration,
     .externalPlayerIcon,
+    .favoritesIcon,
     .playlistIcons,
     .watchedProgressBar,
     .videoCountContainer,
@@ -144,6 +145,18 @@ $watched-transition-duration: 0.5s;
       justify-self: left;
       margin-bottom: 4px;
       margin-left: 4px;
+    }
+
+    .favoritesIcon {
+      font-size: 17px;
+      justify-self: right;
+      margin-right: 3px;
+      margin-top: 3px;
+      height: fit-content;
+
+      &.pushDown {
+        margin-top: 36px;
+      }
     }
 
     .playlistIcons {
@@ -320,6 +333,7 @@ $watched-transition-duration: 0.5s;
     }
   }
 
+  .favoritesIcon,
   .playlistIcons,
   .externalPlayerIcon {
     opacity: $thumbnail-overlay-opacity;
@@ -327,8 +341,10 @@ $watched-transition-duration: 0.5s;
 
   @media (hover: hover) {
     &:hover .addToPlaylistIcon:not(.alwaysVisible),
+    &:hover .favoritesIcon,
     &:hover .externalPlayerIcon,
     &:focus-within .addToPlaylistIcon:not(.alwaysVisible),
+    &:focus-within .favoritesIcon,
     &:focus-within .externalPlayerIcon {
       opacity: $thumbnail-overlay-opacity;
     }
@@ -339,6 +355,7 @@ $watched-transition-duration: 0.5s;
     }
 
     .addToPlaylistIcon:not(.alwaysVisible),
+    .favoritesIcon,
     .externalPlayerIcon,
     .optionsButton {
       opacity: 0;
