@@ -39,13 +39,17 @@
 }
 
 @media only screen and (max-width: 680px) {
+  .mobileHidden {
+    display: none;
+  }
+
   .sideNavMoreOptions {
     display: block;
   }
 
   .sideNav, .closed {
     margin-block-start: 0px;
-    block-size: 60px;
+    block-size: min-content;
     inline-size: 100%;
     inset-block-end: 0px;
     inset-block-start: auto;
@@ -54,9 +58,8 @@
 
   .navOption, .closed .navOption {
     inline-size: 70px;
-    block-size: 40px;
+    block-size: min-content;
     padding-block: 10px;
-    padding-inline: 0;
   }
 
   .navLabel {
@@ -71,7 +74,6 @@
     margin-inline-start: 0px;
     inline-size: 100%;
     display: block;
-    margin-block-start: 0.5em;
   }
 
   .moreOption {
@@ -79,6 +81,6 @@
   }
 
   .closed .navIconExpand{
-    block-size:1.3em;
+    block-size: 1.3em;
   }
 }

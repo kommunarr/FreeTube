@@ -194,7 +194,7 @@
 
   .sideNav, .closed {
     margin-block-start: 0px;
-    block-size: 60px;
+    block-size: min-content;
     inline-size: 100%;
     inset-block-end: 0px;
     inset-block-start: auto;
@@ -203,10 +203,9 @@
 
   .navOption, .closed .navOption {
     inline-size: 70px;
-    block-size: 40px;
+    block-size: min-content;
     padding: 0px;
-    padding-block-start: 10px;
-    padding-block-end: 10px;
+    padding-block: 10px;
   }
 
   .navLabel {
