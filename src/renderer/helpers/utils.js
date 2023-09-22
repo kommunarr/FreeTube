@@ -530,6 +530,15 @@ export async function getPicturesPath() {
   }
 }
 
+export function searchForQueryInPage(query) {
+  if (!process.env.IS_ELECTRON) {
+    return null
+  }
+
+  const ipcRenderer = require('electron').ipcRenderer
+  ipcRenderer.send(IpcChannels.SEARCH_QUERY_IN_PAGE_UPDATE, query)
+}
+
 export function extractNumberFromString(str) {
   if (typeof str === 'string') {
     return parseInt(str.replaceAll(/\D+/g, ''))

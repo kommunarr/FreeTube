@@ -14,6 +14,8 @@ const IpcChannels = {
   CREATE_NEW_WINDOW: 'create-new-window',
   OPEN_IN_EXTERNAL_PLAYER: 'open-in-external-player',
   NATIVE_THEME_UPDATE: 'native-theme-update',
+  SEARCH_QUERY_IN_PAGE_UPDATE: 'search-query-in-page-update',
+  SEARCH_QUERY_RESULTS_IN_PAGE_FOUND: 'found-in-page',
 
   DB_SETTINGS: 'db-settings',
   DB_HISTORY: 'db-history',

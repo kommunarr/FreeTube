@@ -452,6 +452,14 @@ function runApp() {
     if (isDebug) {
       mainWindow.webContents.openDevTools()
     }
+
+    mainWindow.webContents.on('found-in-page', (_, result) => {
+      if (result.finalUpdate) {
+        mainWindow.webContents.stopFindInPage('keepSelection')
+      }
+
+      mainWindow.webContents.send(IpcChannels.SEARCH_QUERY_RESULTS_IN_PAGE_FOUND, result)
+    })
   })
 
   async function installDevTools() {
@@ -700,6 +708,10 @@ function runApp() {
     allWindows.forEach((window) => {
       window.webContents.send(IpcChannels.NATIVE_THEME_UPDATE, nativeTheme.shouldUseDarkColors)
     })
+  })
+
+  ipcMain.on(IpcChannels.SEARCH_QUERY_IN_PAGE_UPDATE, (_, query) => {
+    mainWindow.webContents.findInPage(query)
   })
 
   ipcMain.on(IpcChannels.ENABLE_PROXY, (_, url) => {

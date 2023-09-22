@@ -303,6 +303,9 @@ export default defineComponent({
       ipcRenderer.on('history-forward', (_event) => {
         this.$refs.topNav.historyForward()
       })
+      ipcRenderer.on(IpcChannels.SEARCH_QUERY_RESULTS_IN_PAGE_FOUND, (_event, result) => {
+        this.$refs.topNav.updatePageSearchResults(result)
+      })
     },
 
     handleKeyboardShortcuts: function (event) {
@@ -313,17 +316,23 @@ export default defineComponent({
             this.$refs.topNav.focusSearch()
             break
         }
+      } else if ((process.platform !== 'darwin' && event.ctrlKey) ||
+      (process.platform === 'darwin' && event.metaKey)) {
+        switch (event.key) {
+          case 'F':
+          case 'f':
+            this.$refs.topNav.enablePageSearch()
+            break
+          case 'L':
+          case 'l':
+            this.$refs.topNav.focusSearch()
+            break
+        }
       }
+
       switch (event.key) {
         case 'Tab':
           this.hideOutlines = false
-          break
-        case 'L':
-        case 'l':
-          if ((process.platform !== 'darwin' && event.ctrlKey) ||
-            (process.platform === 'darwin' && event.metaKey)) {
-            this.$refs.topNav.focusSearch()
-          }
           break
       }
     },

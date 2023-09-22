@@ -6,7 +6,7 @@ import FtProfileSelector from '../ft-profile-selector/ft-profile-selector.vue'
 import debounce from 'lodash.debounce'
 
 import { IpcChannels } from '../../../constants'
-import { openInternalPath } from '../../helpers/utils'
+import { openInternalPath, searchForQueryInPage } from '../../helpers/utils'
 import { clearLocalSearchSuggestionsSession, getLocalSearchSuggestions } from '../../helpers/api/local'
 import { invidiousAPICall } from '../../helpers/api/invidious'
 
@@ -27,6 +27,7 @@ export default defineComponent({
       isForwardOrBack: false,
       isArrowBackwardDisabled: true,
       isArrowForwardDisabled: true,
+      showSearchPageBox: false,
       searchSuggestionsDataList: [],
       lastSuggestionQuery: ''
     }
@@ -103,6 +104,7 @@ export default defineComponent({
     })
 
     this.debounceSearchResults = debounce(this.getSearchSuggestions, 200)
+    this.debouncePageSearch = debounce(searchForQueryInPage, 100)
   },
   methods: {
     goToSearch: async function (query, { event }) {
@@ -221,6 +223,14 @@ export default defineComponent({
       }
     },
 
+    findSearchQueryInPageDebounce: function (query) {
+      this.debouncePageSearch(query)
+    },
+
+    updatePageSearchResults: function (result) {
+      // console.log('found in page: ' + result)
+    },
+
     getSearchSuggestions: function (query) {
       switch (this.backendPreference) {
         case 'local':
@@ -314,6 +324,11 @@ export default defineComponent({
           this.isArrowForwardDisabled = true
         }
       }
+    },
+
+    enablePageSearch: function () {
+      this.showSearchPageBox = true
+      this.$nextTick(() => this.$refs.searchPageBox.focus())
     },
 
     toggleSideNav: function () {
