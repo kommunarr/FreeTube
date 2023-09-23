@@ -46,6 +46,10 @@ export default defineComponent({
       type: Boolean,
       default: false
     },
+    isPageSearch: {
+      type: Boolean,
+      default: false
+    },
     disabled: {
       type: Boolean,
       default: false

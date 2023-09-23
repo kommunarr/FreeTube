@@ -215,3 +215,14 @@
     }
   }
 }
+
+.searchPageBox {
+  background-color: var(--card-bg-color);
+  z-index: 4;
+  position: fixed;
+  inset-inline-end: 100px;
+  inset-block-start: 65px;
+  // border: 1px solid var(--primary-text-color);
+  box-shadow: 0 0 5px -1px var(--primary-text-color);
+  // box-shadow: 1px 1px 4px 1px var(--primary-text-color);
+}

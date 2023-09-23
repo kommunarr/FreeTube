@@ -224,11 +224,16 @@ export default defineComponent({
     },
 
     findSearchQueryInPageDebounce: function (query) {
+      if (query === '') {
+        return
+      }
+
       this.debouncePageSearch(query)
     },
 
     updatePageSearchResults: function (result) {
       // console.log('found in page: ' + result)
+      this.$refs.searchPageBox.focus()
     },
 
     getSearchSuggestions: function (query) {

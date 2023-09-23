@@ -107,6 +107,10 @@
   background-color: var(--search-bar-color);
 }
 
+.pageSearch .ft-input {
+  background-color: var(--card-bg-color);
+}
+
 .ft-input-component ::-webkit-input-placeholder {
   color: var(--tertiary-text-color);
   user-select: none;

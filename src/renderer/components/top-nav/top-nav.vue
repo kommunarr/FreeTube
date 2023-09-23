@@ -108,6 +108,23 @@
       />
     </div>
     <ft-profile-selector class="side profiles" />
+
+    <div
+      v-if="showSearchPageBox"
+    >
+      <ft-input
+        ref="searchPageBox"
+        :is-page-search="true"
+        :show-action-button="false"
+        class="searchPageBox"
+        placeholder=""
+        @input="findSearchQueryInPageDebounce"
+      />
+      <!-- divider
+      up arrow
+      down arrow
+      close button -->
+    </div>
   </div>
 </template>
 

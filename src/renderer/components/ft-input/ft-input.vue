@@ -4,6 +4,7 @@
     class="ft-input-component"
     :class="{
       search: isSearch,
+      pageSearch: isPageSearch,
       forceTextColor: forceTextColor,
       showActionButton: showActionButton,
       showClearTextButton: showClearTextButton,
