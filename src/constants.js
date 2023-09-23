@@ -16,6 +16,7 @@ const IpcChannels = {
   NATIVE_THEME_UPDATE: 'native-theme-update',
   SEARCH_QUERY_IN_PAGE_UPDATE: 'search-query-in-page-update',
   SEARCH_QUERY_RESULTS_IN_PAGE_FOUND: 'found-in-page',
+  CLEAR_PAGE_SEARCH: 'clear-page-search',
 
   DB_SETTINGS: 'db-settings',
   DB_HISTORY: 'db-history',

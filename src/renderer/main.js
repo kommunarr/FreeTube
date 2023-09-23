@@ -9,6 +9,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 // to avoid code conflict and duplicate entries
 import {
   faAngleDown,
+  faAngleUp,
   faArrowDown,
   faArrowLeft,
   faArrowRight,
@@ -63,6 +64,7 @@ import {
   faTimes,
   faTimesCircle,
   faUsers,
+  faXmark,
 } from '@fortawesome/free-solid-svg-icons'
 import {
   faBitcoin,
@@ -81,6 +83,7 @@ Vue.config.productionTip = process.env.NODE_ENV === 'development'
 library.add(
   // solid icons
   faAngleDown,
+  faAngleUp,
   faArrowDown,
   faArrowLeft,
   faArrowRight,
@@ -135,6 +138,7 @@ library.add(
   faTimes,
   faTimesCircle,
   faUsers,
+  faXmark,
 
   // brand icons
   faGithub,

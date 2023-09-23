@@ -530,13 +530,22 @@ export async function getPicturesPath() {
   }
 }
 
-export function searchForQueryInPage(query) {
+export function searchForQueryInPage(query, options = {}) {
   if (!process.env.IS_ELECTRON) {
     return null
   }
 
   const ipcRenderer = require('electron').ipcRenderer
-  ipcRenderer.send(IpcChannels.SEARCH_QUERY_IN_PAGE_UPDATE, query)
+  ipcRenderer.send(IpcChannels.SEARCH_QUERY_IN_PAGE_UPDATE, query, options)
+}
+
+export function clearPageSearch() {
+  if (!process.env.IS_ELECTRON) {
+    return null
+  }
+
+  const ipcRenderer = require('electron').ipcRenderer
+  ipcRenderer.send(IpcChannels.CLEAR_PAGE_SEARCH)
 }
 
 export function extractNumberFromString(str) {

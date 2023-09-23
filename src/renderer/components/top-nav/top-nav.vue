@@ -110,15 +110,46 @@
     <ft-profile-selector class="side profiles" />
 
     <div
-      v-if="showSearchPageBox"
+      v-if="showPageSearchBox"
+      class="searchPageArea"
     >
       <ft-input
         ref="searchPageBox"
         :is-page-search="true"
         :show-action-button="false"
-        class="searchPageBox"
         placeholder=""
+        class="searchPageBox"
         @input="findSearchQueryInPageDebounce"
+      />
+
+      <!-- current search index / total count -->
+
+      <font-awesome-icon
+        class="searchPageBoxIcon"
+        :icon="['fas', 'angle-up']"
+        :title="prevPageSearchResultText"
+        role="button"
+        tabindex="0"
+        @click="findPrevInstanceOfQueryInPage"
+        @keydown.enter.prevent="findPrevInstanceOfQueryInPage"
+      />
+      <font-awesome-icon
+        class="searchPageBoxIcon"
+        :icon="['fas', 'angle-down']"
+        :title="nextPageSearchResultText"
+        role="button"
+        tabindex="0"
+        @click="findNextInstanceOfQueryInPage"
+        @keydown.enter.prevent="findNextInstanceOfQueryInPage"
+      />
+      <font-awesome-icon
+        class="searchPageBoxIcon"
+        :icon="['fas', 'xmark']"
+        :title="closePageSearchBoxText"
+        role="button"
+        tabindex="0"
+        @click="closePageSearch"
+        @keydown.enter.prevent="closePageSearchBox"
       />
       <!-- divider
       up arrow

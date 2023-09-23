@@ -6,7 +6,7 @@ import FtProfileSelector from '../ft-profile-selector/ft-profile-selector.vue'
 import debounce from 'lodash.debounce'
 
 import { IpcChannels } from '../../../constants'
-import { openInternalPath, searchForQueryInPage } from '../../helpers/utils'
+import { clearPageSearch, openInternalPath, searchForQueryInPage } from '../../helpers/utils'
 import { clearLocalSearchSuggestionsSession, getLocalSearchSuggestions } from '../../helpers/api/local'
 import { invidiousAPICall } from '../../helpers/api/invidious'
 
@@ -27,9 +27,10 @@ export default defineComponent({
       isForwardOrBack: false,
       isArrowBackwardDisabled: true,
       isArrowForwardDisabled: true,
-      showSearchPageBox: false,
+      showPageSearchBox: false,
       searchSuggestionsDataList: [],
-      lastSuggestionQuery: ''
+      lastSuggestionQuery: '',
+      lastSearchQuery: ''
     }
   },
   computed: {
@@ -79,6 +80,18 @@ export default defineComponent({
 
     newWindowText: function () {
       return this.$t('Open New Window')
+    },
+
+    prevPageSearchResultText: function() {
+      return this.$t('Page Search.Previous Result')
+    },
+
+    nextPageSearchResultText: function() {
+      return this.$t('Page Search.Next Result')
+    },
+
+    closePageSearchBoxText: function() {
+      return this.$t('Page Search.Close Page Search')
     }
   },
   mounted: function () {
@@ -104,7 +117,7 @@ export default defineComponent({
     })
 
     this.debounceSearchResults = debounce(this.getSearchSuggestions, 200)
-    this.debouncePageSearch = debounce(searchForQueryInPage, 100)
+    this.debouncePageSearch = debounce(this.searchForQueryInPage, 100)
   },
   methods: {
     goToSearch: async function (query, { event }) {
@@ -225,15 +238,31 @@ export default defineComponent({
 
     findSearchQueryInPageDebounce: function (query) {
       if (query === '') {
+        clearPageSearch()
         return
       }
 
+      // this.searchForQueryInPage(query)
       this.debouncePageSearch(query)
+    },
+
+    findPrevInstanceOfQueryInPage: function() {
+      searchForQueryInPage(this.lastSearchQuery, { forward: false })
+    },
+
+    findNextInstanceOfQueryInPage: function() {
+      searchForQueryInPage(this.lastSearchQuery, { forward: true })
+    },
+
+    searchForQueryInPage: function(query) {
+      this.lastSearchQuery = query
+      searchForQueryInPage(query, { findNext: true })
     },
 
     updatePageSearchResults: function (result) {
       // console.log('found in page: ' + result)
       this.$refs.searchPageBox.focus()
+      // setTimeout(() => this.$refs.searchPageBox.focus(), 100)
     },
 
     getSearchSuggestions: function (query) {
@@ -332,8 +361,13 @@ export default defineComponent({
     },
 
     enablePageSearch: function () {
-      this.showSearchPageBox = true
+      this.showPageSearchBox = true
       this.$nextTick(() => this.$refs.searchPageBox.focus())
+    },
+
+    closePageSearch: function() {
+      this.showPageSearchBox = false
+      clearPageSearch()
     },
 
     toggleSideNav: function () {

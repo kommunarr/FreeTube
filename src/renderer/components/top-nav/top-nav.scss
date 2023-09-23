@@ -216,7 +216,7 @@
   }
 }
 
-.searchPageBox {
+.searchPageArea {
   background-color: var(--card-bg-color);
   z-index: 4;
   position: fixed;
@@ -224,5 +224,24 @@
   inset-block-start: 65px;
   // border: 1px solid var(--primary-text-color);
   box-shadow: 0 0 5px -1px var(--primary-text-color);
+  inline-size: 250px;
+  display: flex;
+  gap: 5px;
   // box-shadow: 1px 1px 4px 1px var(--primary-text-color);
+
+  .searchPageBox {
+    inline-size: 150px;
+  }
+
+  .searchPageBoxIcon {
+    margin-block: auto;
+    padding: 10px;
+    border-radius: 50%;
+
+    &:hover {
+      background-color: var(--side-nav-hover-color);
+      color: var(--side-nav-hover-text-color);
+      transition: background 0.2s ease-in;
+    }
+  }
 }

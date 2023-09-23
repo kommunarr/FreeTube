@@ -710,8 +710,12 @@ function runApp() {
     })
   })
 
-  ipcMain.on(IpcChannels.SEARCH_QUERY_IN_PAGE_UPDATE, (_, query) => {
-    mainWindow.webContents.findInPage(query)
+  ipcMain.on(IpcChannels.SEARCH_QUERY_IN_PAGE_UPDATE, (_, query, options) => {
+    mainWindow.webContents.findInPage(query, options)
+  })
+
+  ipcMain.on(IpcChannels.CLEAR_PAGE_SEARCH, (_) => {
+    mainWindow.webContents.stopFindInPage('clearSelection')
   })
 
   ipcMain.on(IpcChannels.ENABLE_PROXY, (_, url) => {
