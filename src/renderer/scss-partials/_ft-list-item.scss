@@ -157,6 +157,15 @@ $watched-transition-duration: 0.5s;
       grid-auto-flow: column;
       justify-content: flex-end;
     }
+
+    .playlistIcons:not(.inUserPlaylist) {
+      grid-auto-flow: row;
+      justify-content: flex-start;
+      align-content: flex-start;
+      gap: 3px;
+    }
+
+    .favoritesIcon,
     .addToPlaylistIcon,
     .trashIcon,
     .upArrowIcon,
@@ -317,14 +326,17 @@ $watched-transition-duration: 0.5s;
   }
 
   .playlistIcons,
+  .favoritesIcon,
   .externalPlayerIcon {
     opacity: $thumbnail-overlay-opacity;
   }
 
   @media (hover: hover) {
     &:hover .addToPlaylistIcon:not(.alwaysVisible),
+    &:hover .favoritesIcon:not(.alwaysVisible),
     &:hover .externalPlayerIcon,
     &:focus-within .addToPlaylistIcon:not(.alwaysVisible),
+    &:focus-within .favoritesIcon:not(.alwaysVisible),
     &:focus-within .externalPlayerIcon {
       opacity: $thumbnail-overlay-opacity;
     }
@@ -335,6 +347,7 @@ $watched-transition-duration: 0.5s;
     }
 
     .addToPlaylistIcon:not(.alwaysVisible),
+    .favoritesIcon:not(.alwaysVisible),
     .externalPlayerIcon,
     .optionsButton {
       opacity: 0;
