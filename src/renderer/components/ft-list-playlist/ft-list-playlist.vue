@@ -20,6 +20,22 @@
           :style="{filter: blurThumbnailsStyle}"
         >
       </router-link>
+      <router-link
+        class="playAllLink"
+        :to="`/watch/${playlistId}`"
+        tabindex="-1"
+        aria-hidden="true"
+      >
+        <ft-icon-button
+          v-if="externalPlayer !== ''"
+          :title="$t('Playlist.Play All')"
+          :icon="['fas', 'play']"
+          class="playAllIcon"
+          theme="base"
+          :padding="7"
+          :size="16"
+        />
+      </router-link>
       <div
         class="videoCountContainer"
       >

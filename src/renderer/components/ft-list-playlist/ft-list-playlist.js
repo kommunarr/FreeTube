@@ -21,6 +21,7 @@ export default defineComponent({
     return {
       playlistId: '',
       channelId: '',
+      firstVideoId: '',
       title: 'Pop Music Playlist - Timeless Pop Songs (Updated Weekly 2020)',
       thumbnail: 'https://i.ytimg.com/vi/JGwWNGJdvx8/mqdefault.jpg',
       channelName: '#RedMusic: Just Hits',
@@ -88,6 +89,7 @@ export default defineComponent({
       this.channelId = this.data.authorId
       this.playlistId = this.data.playlistId
       this.videoCount = this.data.videoCount
+      this.firstVideoId = this.data.firstVideos[0]?.videoId
 
       if (this.data.proxyThumbnail === false) {
         this.thumbnail = this.data.playlistThumbnail
