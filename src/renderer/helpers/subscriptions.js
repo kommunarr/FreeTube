@@ -140,3 +140,33 @@ export function addPublishedDatesInvidious(videos) {
     return video
   })
 }
+
+export async function loadSubscriptionVideosFromCacheOrServer(subscriptionComponent) {
+  subscriptionComponent.isLoading = true
+
+  if (!subscriptionComponent.fetchSubscriptionsAutomatically || subscriptionComponent.videoCacheForAllActiveProfileChannelsPresent) {
+    loadVideosFromCacheForActiveProfileChannels(subscriptionComponent)
+    if (subscriptionComponent.cacheEntriesForAllActiveProfileChannels.length > 0) {
+      let minTimestamp = null
+      subscriptionComponent.cacheEntriesForAllActiveProfileChannels.forEach((cacheEntry) => {
+        if (!minTimestamp || cacheEntry.timestamp.getTime() < minTimestamp.getTime()) {
+          minTimestamp = cacheEntry.timestamp
+        }
+      })
+      subscriptionComponent.updateTimestampByProfile({ profileId: subscriptionComponent.activeProfileId, timestamp: minTimestamp })
+    }
+
+    return
+  }
+
+  subscriptionComponent.loadVideosForSubscriptionsFromRemote()
+}
+
+export async function loadVideosFromCacheForActiveProfileChannels(subscriptionComponent) {
+  const videoList = []
+  subscriptionComponent.cacheEntriesForAllActiveProfileChannels.forEach((channelCacheEntry) => {
+    videoList.push(...channelCacheEntry.videos)
+  })
+  subscriptionComponent.videoList = updateVideoListAfterProcessing(videoList)
+  subscriptionComponent.isLoading = false
+}

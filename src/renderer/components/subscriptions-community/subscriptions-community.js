@@ -73,41 +73,36 @@ export default defineComponent({
   },
   watch: {
     activeProfile: async function (_) {
-      this.isLoading = true
-      this.loadPostsFromCacheSometimes()
+      this.loadPostsFromCacheOrServer()
     },
   },
   mounted: async function () {
-    this.isLoading = true
-
-    this.loadPostsFromCacheSometimes()
+    this.loadPostsFromCacheOrServer()
   },
   methods: {
-    loadPostsFromCacheSometimes() {
+    async loadPostsFromCacheOrServer() {
+      this.isLoading = true
       // This method is called on view visible
-      if (this.cacheEntriesForAllActiveProfileChannels.length > 0) {
-        let minTimestamp = null
-        this.cacheEntriesForAllActiveProfileChannels.forEach((cacheEntry) => {
-          if (!minTimestamp || cacheEntry.timestamp.getTime() < minTimestamp.getTime()) {
-            minTimestamp = cacheEntry.timestamp
-          }
-        })
-        this.updateLastCommunityRefreshTimestampByProfile({ profileId: this.activeProfileId, timestamp: minTimestamp })
-      }
-
-      if (this.postCacheForAllActiveProfileChannelsPresent) {
-        this.loadPostsFromCacheForAllActiveProfileChannels()
+      if (!this.fetchSubscriptionsAutomatically || this.postCacheForAllActiveProfileChannelsPresent) {
+        this.loadPostsFromCacheForActiveProfileChannels()
+        if (this.cacheEntriesForAllActiveProfileChannels.length > 0) {
+          let minTimestamp = null
+          this.cacheEntriesForAllActiveProfileChannels.forEach((cacheEntry) => {
+            if (!minTimestamp || cacheEntry.timestamp.getTime() < minTimestamp.getTime()) {
+              minTimestamp = cacheEntry.timestamp
+            }
+          })
+          this.updateLastCommunityRefreshTimestampByProfile({ profileId: this.activeProfileId, timestamp: minTimestamp })
+        }
         return
       }
 
-      this.maybeLoadPostsForSubscriptionsFromRemote()
+      this.loadPostsForSubscriptionsFromRemote()
     },
 
-    async loadPostsFromCacheForAllActiveProfileChannels() {
+    async loadPostsFromCacheForActiveProfileChannels() {
       const postList = []
-      this.activeSubscriptionList.forEach((channel) => {
-        const channelCacheEntry = this.$store.getters.getPostsCacheByChannel(channel.id)
-
+      this.cacheEntriesForAllActiveProfileChannels.forEach((channelCacheEntry) => {
         postList.push(...channelCacheEntry.posts)
       })
 
@@ -164,17 +159,6 @@ export default defineComponent({
       this.postList = postList
       this.isLoading = false
       this.updateShowProgressBar(false)
-    },
-
-    maybeLoadPostsForSubscriptionsFromRemote: async function () {
-      if (this.fetchSubscriptionsAutomatically) {
-        // `this.isLoading = false` is called inside `loadPostsForSubscriptionsFromRemote` when needed
-        await this.loadPostsForSubscriptionsFromRemote()
-      } else {
-        this.postList = []
-        this.attemptedFetch = false
-        this.isLoading = false
-      }
     },
 
     getChannelPostsLocal: async function (channel) {

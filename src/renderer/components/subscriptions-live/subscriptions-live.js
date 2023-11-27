@@ -5,7 +5,7 @@ import SubscriptionsTabUI from '../subscriptions-tab-ui/subscriptions-tab-ui.vue
 import { copyToClipboard, getRelativeTimeFromDate, showToast } from '../../helpers/utils'
 import { invidiousAPICall } from '../../helpers/api/invidious'
 import { getLocalChannelLiveStreams } from '../../helpers/api/local'
-import { addPublishedDatesInvidious, addPublishedDatesLocal, parseYouTubeRSSFeed, updateVideoListAfterProcessing } from '../../helpers/subscriptions'
+import { addPublishedDatesInvidious, addPublishedDatesLocal, parseYouTubeRSSFeed, updateVideoListAfterProcessing, loadSubscriptionVideosFromCacheOrServer } from '../../helpers/subscriptions'
 
 export default defineComponent({
   name: 'SubscriptionsLive',
@@ -77,47 +77,16 @@ export default defineComponent({
   },
   watch: {
     activeProfile: async function (_) {
-      this.isLoading = true
-      this.loadVideosFromCacheSometimes()
+      loadSubscriptionVideosFromCacheOrServer(this)
     },
   },
   mounted: async function () {
-    this.isLoading = true
-
-    this.loadVideosFromCacheSometimes()
+    loadSubscriptionVideosFromCacheOrServer(this)
   },
   methods: {
-    loadVideosFromCacheSometimes() {
-      // This method is called on view visible
-      if (this.cacheEntriesForAllActiveProfileChannels.length > 0) {
-        let minTimestamp = null
-        this.cacheEntriesForAllActiveProfileChannels.forEach((cacheEntry) => {
-          if (!minTimestamp || cacheEntry.timestamp.getTime() < minTimestamp.getTime()) {
-            minTimestamp = cacheEntry.timestamp
-          }
-        })
-        this.updateLastLiveRefreshTimestampByProfile({ profileId: this.activeProfileId, timestamp: minTimestamp })
-      }
-
-      if (this.videoCacheForAllActiveProfileChannelsPresent) {
-        this.loadVideosFromCacheForAllActiveProfileChannels()
-        return
-      }
-
-      this.maybeLoadVideosForSubscriptionsFromRemote()
+    updateTimestampByProfile(payload) {
+      this.updateLastLiveRefreshTimestampByProfile(payload)
     },
-
-    async loadVideosFromCacheForAllActiveProfileChannels() {
-      const videoList = []
-      this.activeSubscriptionList.forEach((channel) => {
-        const channelCacheEntry = this.$store.getters.getLiveCacheByChannel(channel.id)
-
-        videoList.push(...channelCacheEntry.videos)
-      })
-      this.videoList = updateVideoListAfterProcessing(videoList)
-      this.isLoading = false
-    },
-
     loadVideosForSubscriptionsFromRemote: async function () {
       if (this.activeSubscriptionList.length === 0) {
         this.isLoading = false
@@ -175,17 +144,6 @@ export default defineComponent({
       this.videoList = updateVideoListAfterProcessing(videoList)
       this.isLoading = false
       this.updateShowProgressBar(false)
-    },
-
-    maybeLoadVideosForSubscriptionsFromRemote: async function () {
-      if (this.fetchSubscriptionsAutomatically) {
-        // `this.isLoading = false` is called inside `loadVideosForSubscriptionsFromRemote` when needed
-        await this.loadVideosForSubscriptionsFromRemote()
-      } else {
-        this.videoList = []
-        this.attemptedFetch = false
-        this.isLoading = false
-      }
     },
 
     getChannelLiveLocal: async function (channel, failedAttempts = 0) {
