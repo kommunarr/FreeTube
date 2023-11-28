@@ -16,6 +16,7 @@ export default defineComponent({
       videoList: [],
       errorChannels: [],
       attemptedFetch: false,
+      updatedChannelsCount: 0
     }
   },
   computed: {
@@ -56,9 +57,11 @@ export default defineComponent({
       if (this.cacheEntriesForAllActiveProfileChannels.length === 0) { return false }
       if (this.cacheEntriesForAllActiveProfileChannels.length < this.activeSubscriptionList.length) { return false }
 
-      return this.cacheEntriesForAllActiveProfileChannels.every((cacheEntry) => {
-        return cacheEntry.videos != null
-      })
+      return this.nonNullCacheEntriesCount < this.cacheEntriesForAllActiveProfileChannels.length
+    },
+    nonNullCacheEntriesCount() {
+      return this.cacheEntriesForAllActiveProfileChannels
+        .filter((cacheEntry) => cacheEntry.videos != null).length
     },
 
     activeSubscriptionList: function () {
@@ -82,6 +85,8 @@ export default defineComponent({
       this.updateLastShortRefreshTimestampByProfile(payload)
     },
     loadVideosForSubscriptionsFromRemote: async function () {
+      this.updatedChannelsCount = this.activeSubscriptionList.length
+
       if (this.activeSubscriptionList.length === 0) {
         this.isLoading = false
         this.videoList = []

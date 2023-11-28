@@ -7,6 +7,8 @@
     :is-community="true"
     :initial-data-limit="20"
     :last-refresh-timestamp="lastCommunityRefreshTimestamp"
+    :updated-channels-count="updatedChannelsCount"
+    :total-channels-count="activeSubscriptionList.length"
     :title="$t('Global.Community')"
     @refresh="loadPostsForSubscriptionsFromRemote"
   />

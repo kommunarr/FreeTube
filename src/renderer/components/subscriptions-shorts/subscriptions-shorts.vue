@@ -5,6 +5,8 @@
     :error-channels="errorChannels"
     :attempted-fetch="attemptedFetch"
     :last-refresh-timestamp="lastShortRefreshTimestamp"
+    :updated-channels-count="updatedChannelsCount"
+    :total-channels-count="activeSubscriptionList.length"
     :title="$t('Global.Shorts')"
     @refresh="loadVideosForSubscriptionsFromRemote"
   />

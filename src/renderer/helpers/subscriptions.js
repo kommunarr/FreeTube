@@ -147,6 +147,7 @@ export async function loadSubscriptionVideosFromCacheOrServer(subscriptionCompon
   if (!subscriptionComponent.fetchSubscriptionsAutomatically || subscriptionComponent.videoCacheForAllActiveProfileChannelsPresent) {
     loadVideosFromCacheForActiveProfileChannels(subscriptionComponent)
     if (subscriptionComponent.cacheEntriesForAllActiveProfileChannels.length > 0) {
+      subscriptionComponent.updatedChannelsCount = subscriptionComponent.nonNullCacheEntriesCount
       let minTimestamp = null
       subscriptionComponent.cacheEntriesForAllActiveProfileChannels.forEach((cacheEntry) => {
         if (!minTimestamp || cacheEntry.timestamp.getTime() < minTimestamp.getTime()) {
@@ -165,7 +166,9 @@ export async function loadSubscriptionVideosFromCacheOrServer(subscriptionCompon
 export async function loadVideosFromCacheForActiveProfileChannels(subscriptionComponent) {
   const videoList = []
   subscriptionComponent.cacheEntriesForAllActiveProfileChannels.forEach((channelCacheEntry) => {
-    videoList.push(...channelCacheEntry.videos)
+    if (channelCacheEntry.videos != null) {
+      videoList.push(...channelCacheEntry.videos)
+    }
   })
   subscriptionComponent.videoList = updateVideoListAfterProcessing(videoList)
   subscriptionComponent.isLoading = false

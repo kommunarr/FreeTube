@@ -58,6 +58,8 @@
     <ft-refresh-widget
       :disable-refresh="isLoading"
       :last-refresh-timestamp="lastRefreshTimestamp"
+      :updated-channels-count="updatedChannelsCount"
+      :total-channels-count="totalChannelsCount"
       :title="title"
       @click="$emit('refresh')"
     />

@@ -17,6 +17,7 @@ export default defineComponent({
       postList: [],
       errorChannels: [],
       attemptedFetch: false,
+      updatedChannelsCount: 0
     }
   },
   computed: {
@@ -58,9 +59,12 @@ export default defineComponent({
       if (this.cacheEntriesForAllActiveProfileChannels.length === 0) { return false }
       if (this.cacheEntriesForAllActiveProfileChannels.length < this.activeSubscriptionList.length) { return false }
 
-      return this.cacheEntriesForAllActiveProfileChannels.every((cacheEntry) => {
-        return cacheEntry.posts != null
-      })
+      return this.nonNullCacheEntriesCount < this.cacheEntriesForAllActiveProfileChannels.length
+    },
+
+    nonNullCacheEntriesCount() {
+      return this.cacheEntriesForAllActiveProfileChannels
+        .filter((cacheEntry) => cacheEntry.posts != null).length
     },
 
     activeSubscriptionList: function () {
@@ -84,6 +88,7 @@ export default defineComponent({
       this.isLoading = true
       // This method is called on view visible
       if (!this.fetchSubscriptionsAutomatically || this.postCacheForAllActiveProfileChannelsPresent) {
+        this.updatedChannelsCount = this.nonNullCacheEntriesCount
         this.loadPostsFromCacheForActiveProfileChannels()
         if (this.cacheEntriesForAllActiveProfileChannels.length > 0) {
           let minTimestamp = null
@@ -115,6 +120,8 @@ export default defineComponent({
     },
 
     loadPostsForSubscriptionsFromRemote: async function () {
+      this.updatedChannelsCount = this.activeSubscriptionList.length
+
       if (this.activeSubscriptionList.length === 0) {
         this.isLoading = false
         this.postList = []

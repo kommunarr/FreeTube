@@ -9,7 +9,7 @@
       v-if="lastRefreshTimestamp"
       class="lastRefreshTimestamp"
     >
-      {{ $t('Feed.Feed Last Updated', { feedName: title, date: lastRefreshTimestamp }) }}
+      {{ lastRefreshTimestampLabel }}
     </p>
     <ft-icon-button
       :disabled="disableRefresh"

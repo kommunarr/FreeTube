@@ -130,6 +130,7 @@ Trending:
 Most Popular: Most Popular
 Feed:
   Feed Last Updated: '{feedName} feed last updated: {date}'
+  Feed Last Updated For Channels: '{feedName} feed last updated for {someChannelsCount}/{allChannelsCount} channels: {date}'
   Refresh Feed: Refresh {subscriptionName}
 Playlists: Playlists
 User Playlists:

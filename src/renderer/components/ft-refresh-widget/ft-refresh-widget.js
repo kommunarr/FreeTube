@@ -19,11 +19,29 @@ export default defineComponent({
     title: {
       type: String,
       required: true
+    },
+    updatedChannelsCount: {
+      type: Number,
+      default: 0
+    },
+    totalChannelsCount: {
+      type: Number,
+      default: 0
     }
   },
   computed: {
     isSideNavOpen: function () {
       return this.$store.getters.getIsSideNavOpen
+    },
+    lastRefreshTimestampLabel: function () {
+      return this.updatedChannelsCount === this.totalChannelsCount
+        ? this.$t('Feed.Feed Last Updated', { feedName: this.title, date: this.lastRefreshTimestamp })
+        : this.$t('Feed.Feed Last Updated For Channels', {
+          feedName: this.title,
+          date: this.lastRefreshTimestamp,
+          someChannelsCount: this.updatedChannelsCount,
+          allChannelsCount: this.totalChannelsCount
+        })
     }
   }
 })

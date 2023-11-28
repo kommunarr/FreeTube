@@ -51,6 +51,14 @@ export default defineComponent({
     title: {
       type: String,
       required: true
+    },
+    updatedChannelsCount: {
+      type: Number,
+      default: 0
+    },
+    totalChannelsCount: {
+      type: Number,
+      default: 0
     }
   },
   data: function () {
