@@ -17,7 +17,7 @@ export default defineComponent({
       postList: [],
       errorChannels: [],
       attemptedFetch: false,
-      updatedChannelsCount: 0
+      updatedChannelsCount: 0,
     }
   },
   computed: {
