@@ -1,6 +1,10 @@
 import store from '../store/index'
 import { calculatePublishedDate } from './utils'
 
+function fetchSubscriptionsAutomatically() {
+  return store.getters.getFetchSubscriptionsAutomatically
+}
+
 /**
  * Filtering and sort based on user preferences
  * @param {any[]} videos
@@ -141,35 +145,36 @@ export function addPublishedDatesInvidious(videos) {
   })
 }
 
-export async function loadSubscriptionVideosFromCacheOrServer(subscriptionComponent) {
-  subscriptionComponent.isLoading = true
-
-  if (!subscriptionComponent.fetchSubscriptionsAutomatically || subscriptionComponent.videoCacheForAllActiveProfileChannelsPresent) {
-    loadVideosFromCacheForActiveProfileChannels(subscriptionComponent)
-    if (subscriptionComponent.cacheEntriesForAllActiveProfileChannels.length > 0) {
-      subscriptionComponent.updatedChannelsCount = subscriptionComponent.nonNullCacheEntriesCount
+export async function loadSubscriptionVideosFromCacheOrServer(
+  cacheEntriesForAllActiveProfileChannels,
+  videoCacheForAllActiveProfileChannelsPresent,
+  updateTimestampByProfile,
+  activeProfileId
+) {
+  if (fetchSubscriptionsAutomatically() || videoCacheForAllActiveProfileChannelsPresent) {
+    const videoList = loadVideosFromCacheForActiveProfileChannels(cacheEntriesForAllActiveProfileChannels)
+    if (cacheEntriesForAllActiveProfileChannels.length > 0) {
       let minTimestamp = null
-      subscriptionComponent.cacheEntriesForAllActiveProfileChannels.forEach((cacheEntry) => {
+      cacheEntriesForAllActiveProfileChannels.forEach((cacheEntry) => {
         if (!minTimestamp || cacheEntry.timestamp.getTime() < minTimestamp.getTime()) {
           minTimestamp = cacheEntry.timestamp
         }
       })
-      subscriptionComponent.updateTimestampByProfile({ profileId: subscriptionComponent.activeProfileId, timestamp: minTimestamp })
+      updateTimestampByProfile({ profileId: activeProfileId, timestamp: minTimestamp })
     }
 
-    return
+    return videoList
   }
 
-  subscriptionComponent.loadVideosForSubscriptionsFromRemote()
+  return null
 }
 
-export async function loadVideosFromCacheForActiveProfileChannels(subscriptionComponent) {
+export async function loadVideosFromCacheForActiveProfileChannels(cacheEntriesForAllActiveProfileChannels) {
   const videoList = []
-  subscriptionComponent.cacheEntriesForAllActiveProfileChannels.forEach((channelCacheEntry) => {
+  cacheEntriesForAllActiveProfileChannels.forEach((channelCacheEntry) => {
     if (channelCacheEntry.videos != null) {
       videoList.push(...channelCacheEntry.videos)
     }
   })
-  subscriptionComponent.videoList = updateVideoListAfterProcessing(videoList)
-  subscriptionComponent.isLoading = false
+  return updateVideoListAfterProcessing(videoList)
 }

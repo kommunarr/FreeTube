@@ -80,13 +80,30 @@ export default defineComponent({
   },
   watch: {
     activeProfile: async function (_) {
-      loadSubscriptionVideosFromCacheOrServer(this)
+      this.isLoading = true
+      this.loadSubscriptionVideosFromCacheOrServer()
     },
   },
   mounted: async function () {
-    loadSubscriptionVideosFromCacheOrServer(this)
+    this.isLoading = true
+    this.loadSubscriptionVideosFromCacheOrServer()
   },
   methods: {
+    loadSubscriptionVideosFromCacheOrServer: function () {
+      const videoList = loadSubscriptionVideosFromCacheOrServer(
+        this.cacheEntriesForAllActiveProfileChannels,
+        this.videoCacheForAllActiveProfileChannelsPresent,
+        this.updateTimestampByProfile,
+        this.activeProfileId
+      )
+      if (videoList) {
+        this.isLoading = false
+        this.updatedChannelsCount = this.nonNullCacheEntriesCount
+        return
+      }
+
+      this.loadVideosForSubscriptionsFromRemote()
+    },
     updateTimestampByProfile(payload) {
       this.updateLastLiveRefreshTimestampByProfile(payload)
     },
