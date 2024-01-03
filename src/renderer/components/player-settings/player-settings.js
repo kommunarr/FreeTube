@@ -80,10 +80,6 @@ export default defineComponent({
       return this.$store.getters.getPlayNextVideo
     },
 
-    enableSubtitlesByDefault: function () {
-      return this.$store.getters.getEnableSubtitlesByDefault
-    },
-
     forceLocalBackendForLegacy: function () {
       return this.$store.getters.getForceLocalBackendForLegacy
     },
@@ -100,28 +96,32 @@ export default defineComponent({
       return parseInt(this.$store.getters.getDefaultInterval)
     },
 
-    defaultVolume: function () {
-      return Math.round(parseFloat(this.$store.getters.getDefaultVolume) * 100)
-    },
-
     defaultPlayback: function () {
       return parseFloat(this.$store.getters.getDefaultPlayback)
-    },
-
-    defaultVideoFormat: function () {
-      return this.$store.getters.getDefaultVideoFormat
     },
 
     defaultQuality: function () {
       return this.$store.getters.getDefaultQuality
     },
 
-    allowDashAv1Formats: function () {
-      return this.$store.getters.getAllowDashAv1Formats
-    },
-
     defaultTheatreMode: function () {
       return this.$store.getters.getDefaultTheatreMode
+    },
+
+    defaultVideoFormat: function () {
+      return this.$store.getters.getDefaultVideoFormat
+    },
+
+    defaultVolume: function () {
+      return Math.round(parseFloat(this.$store.getters.getDefaultVolume) * 100)
+    },
+
+    enableSubtitlesByDefault: function () {
+      return this.$store.getters.getEnableSubtitlesByDefault
+    },
+
+    allowDashAv1Formats: function () {
+      return this.$store.getters.getAllowDashAv1Formats
     },
 
     hideRecommendedVideos: function () {

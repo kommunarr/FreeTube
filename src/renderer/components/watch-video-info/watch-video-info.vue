@@ -81,6 +81,12 @@
       </div>
       -->
       <div class="videoOptions">
+        <ft-toggle-switch
+          :label="$t('Video.Remember current video settings throughout session')"
+          :compact="false"
+          :default-value="rememberVideoSettingsThroughoutSession"
+          @change="toggleRememberVideoSettingsThroughoutSession"
+        />
         <ft-icon-button
           v-if="!isUpcoming"
           :title="$t('Video.Save Video')"

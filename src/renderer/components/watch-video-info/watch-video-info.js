@@ -4,6 +4,7 @@ import FtCard from '../ft-card/ft-card.vue'
 import FtIconButton from '../ft-icon-button/ft-icon-button.vue'
 import FtShareButton from '../ft-share-button/ft-share-button.vue'
 import FtSubscribeButton from '../ft-subscribe-button/ft-subscribe-button.vue'
+import FtToggleSwitch from '../ft-toggle-switch/ft-toggle-switch.vue'
 import { formatNumber, openExternalLink, showToast } from '../../helpers/utils'
 
 export default defineComponent({
@@ -12,7 +13,8 @@ export default defineComponent({
     'ft-card': FtCard,
     'ft-icon-button': FtIconButton,
     'ft-share-button': FtShareButton,
-    'ft-subscribe-button': FtSubscribeButton
+    'ft-subscribe-button': FtSubscribeButton,
+    'ft-toggle-switch': FtToggleSwitch
   },
   props: {
     id: {
@@ -224,9 +226,33 @@ export default defineComponent({
       return this.$store.getters.getExternalPlayer
     },
 
+    rememberVideoSettingsThroughoutSession: function () {
+      return this.$store.getters.getRememberVideoSettingsThroughoutSession
+    },
+
     defaultPlayback: function () {
       return this.$store.getters.getDefaultPlayback
-    }
+    },
+
+    defaultQuality: function () {
+      return this.$store.getters.getDefaultQuality
+    },
+
+    defaultTheatreMode: function () {
+      return this.$store.getters.getDefaultTheatreMode
+    },
+
+    defaultVideoFormat: function () {
+      return this.$store.getters.getDefaultVideoFormat
+    },
+
+    defaultVolume: function () {
+      return Math.round(parseFloat(this.$store.getters.getDefaultVolume) * 100)
+    },
+
+    enableSubtitlesByDefault: function () {
+      return this.$store.getters.getEnableSubtitlesByDefault
+    },
   },
   mounted: function () {
     if ('mediaSession' in navigator) {
@@ -342,11 +368,30 @@ export default defineComponent({
       showToast(this.$t('Video.Video has been removed from your saved list'))
     },
 
+    toggleRememberVideoSettingsThroughoutSession: function () {
+      if (this.rememberVideoSettingsThroughoutSession) {
+        this.updateDefaultVolume(this.defaultVolume / 100)
+        this.updateEnableSubtitlesByDefault(this.enableSubtitlesByDefault)
+        this.updateDefaultPlayback(this.defaultPlayback)
+        this.updateDefaultVideoFormat(this.defaultVideoFormat)
+        this.updateDefaultQuality(this.defaultQuality)
+        this.updateDefaultTheatreMode(this.defaultTheatreMode)
+      }
+      this.updateRememberVideoSettingsThroughoutSession(!this.rememberVideoSettingsThroughoutSession)
+    },
+
     ...mapActions([
       'openInExternalPlayer',
       'addVideo',
       'removeVideo',
-      'downloadMedia'
+      'downloadMedia',
+      'updateRememberVideoSettingsThroughoutSession',
+      'updateDefaultTheatreMode',
+      'updateDefaultVolume',
+      'updateDefaultPlayback',
+      'updateDefaultVideoFormat',
+      'updateDefaultQuality',
+      'updateEnableSubtitlesByDefault'
     ])
   }
 })

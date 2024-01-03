@@ -39,7 +39,7 @@
           @ended="handleVideoEnded"
           @error="handleVideoError"
           @store-caption-list="captionHybridList = $event"
-          @toggle-theatre-mode="useTheatreMode = !useTheatreMode"
+          @toggle-theatre-mode="toggleTheatreMode"
           v-on="!hideChapters && videoChapters.length > 0 ? { timeupdate: updateCurrentChapter } : {}"
         />
         <div

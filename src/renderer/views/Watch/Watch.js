@@ -160,12 +160,6 @@ export default defineComponent({
     defaultInterval: function () {
       return this.$store.getters.getDefaultInterval
     },
-    defaultTheatreMode: function () {
-      return this.$store.getters.getDefaultTheatreMode
-    },
-    defaultVideoFormat: function () {
-      return this.$store.getters.getDefaultVideoFormat
-    },
     forceLocalBackendForLegacy: function () {
       return this.$store.getters.getForceLocalBackendForLegacy
     },
@@ -199,6 +193,9 @@ export default defineComponent({
     hideVideoLikesAndDislikes: function () {
       return this.$store.getters.getHideVideoLikesAndDislikes
     },
+    rememberVideoSettingsThroughoutSession: function () {
+      return this.$store.getters.getRememberVideoSettingsThroughoutSession
+    },
     theatrePossible: function () {
       return !this.hideRecommendedVideos || (!this.hideLiveChat && this.isLive) || this.watchingPlaylist
     },
@@ -220,7 +217,8 @@ export default defineComponent({
 
       this.firstLoad = true
       this.videoPlayerReady = false
-      this.activeFormat = this.defaultVideoFormat
+      this.useTheatreMode = sessionStorage.getItem('theatreMode') && this.theatrePossible
+      this.activeFormat = sessionStorage.getItem('videoFormat')
       this.videoStoryboardSrc = ''
       this.captionHybridList = []
       this.downloadLinks = []
@@ -246,8 +244,7 @@ export default defineComponent({
   },
   mounted: function () {
     this.videoId = this.$route.params.id
-    this.activeFormat = this.defaultVideoFormat
-    this.useTheatreMode = this.defaultTheatreMode && this.theatrePossible
+    this.activeFormat = sessionStorage.getItem('videoFormat')
 
     this.checkIfPlaylist()
     this.checkIfTimestamp()
@@ -1152,6 +1149,13 @@ export default defineComponent({
         })
     },
 
+    toggleTheatreMode: function () {
+      this.useTheatreMode = !this.useTheatreMode
+      if (this.rememberVideoSettingsThroughoutSession) {
+        sessionStorage.setItem('theatreMode', this.useTheatreMode)
+      }
+    },
+
     handleFormatChange: function (format) {
       switch (format) {
         case 'dash':
@@ -1163,6 +1167,12 @@ export default defineComponent({
         case 'audio':
           this.enableAudioFormat()
           break
+        default:
+          return
+      }
+
+      if (this.rememberVideoSettingsThroughoutSession) {
+        sessionStorage.setItem('videoFormat', format)
       }
     },
 

@@ -175,16 +175,11 @@ const state = {
   secColor: 'Blue',
   defaultCaptionSettings: '{}',
   defaultInterval: 5,
-  defaultPlayback: 1,
   defaultProfile: MAIN_PROFILE_ID,
-  defaultQuality: '720',
   defaultSkipInterval: 5,
-  defaultTheatreMode: false,
-  defaultVideoFormat: 'dash',
   disableSmoothScrolling: false,
   displayVideoPlayButton: true,
   enableSearchSuggestions: true,
-  enableSubtitlesByDefault: false,
   enterFullscreenOnDisplayRotate: false,
   externalLinkHandling: '',
   externalPlayer: '',
@@ -238,6 +233,7 @@ const state = {
   proxyVideos: !process.env.IS_ELECTRON,
   region: 'US',
   rememberHistory: true,
+  rememberVideoSettingsThroughoutSession: false,
   removeVideoMetaFiles: true,
   saveWatchedProgress: true,
   saveVideoHistoryWithLastViewedPlaylist: true,
@@ -363,12 +359,47 @@ const stateWithSideEffects = {
     }
   },
 
+  defaultPlayback: {
+    defaultValue: 1,
+    sideEffectsHandler: (_, value) => {
+      sessionStorage.setItem('playback', value)
+    }
+  },
+
+  defaultTheatreMode: {
+    defaultValue: 1,
+    sideEffectsHandler: (_, value) => {
+      sessionStorage.setItem('theatreMode', value)
+    }
+  },
+
+  defaultQuality: {
+    defaultValue: '720',
+    sideEffectsHandler: (_, value) => {
+      sessionStorage.setItem('quality', value)
+    }
+  },
+
+  defaultVideoFormat: {
+    defaultValue: 'dash',
+    sideEffectsHandler: (_, value) => {
+      sessionStorage.setItem('videoFormat', value)
+    }
+  },
+
   defaultVolume: {
     defaultValue: 1,
     sideEffectsHandler: (_, value) => {
       sessionStorage.setItem('volume', value)
       value === 0 ? sessionStorage.setItem('muted', 'true') : sessionStorage.setItem('muted', 'false')
       sessionStorage.setItem('defaultVolume', value)
+    }
+  },
+
+  enableSubtitlesByDefault: {
+    defaultValue: false,
+    sideEffectsHandler: (_, value) => {
+      sessionStorage.setItem('enableSubtitles', value)
     }
   },
 

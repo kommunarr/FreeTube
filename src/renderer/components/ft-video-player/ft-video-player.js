@@ -189,7 +189,7 @@ export default defineComponent({
     },
 
     defaultPlayback: function () {
-      return this.$store.getters.getDefaultPlayback
+      return sessionStorage.getItem('playback')
     },
 
     defaultSkipInterval: function () {
@@ -197,7 +197,7 @@ export default defineComponent({
     },
 
     defaultQuality: function () {
-      const valueFromStore = this.$store.getters.getDefaultQuality
+      const valueFromStore = sessionStorage.getItem('quality')
       if (valueFromStore === 'auto') { return valueFromStore }
 
       return parseInt(valueFromStore)
@@ -242,6 +242,10 @@ export default defineComponent({
 
     enterFullscreenOnDisplayRotate: function () {
       return this.$store.getters.getEnterFullscreenOnDisplayRotate
+    },
+
+    rememberVideoSettingsThroughoutSession: function () {
+      return this.$store.getters.getRememberVideoSettingsThroughoutSession
     },
 
     sponsorSkips: function () {
@@ -498,6 +502,11 @@ export default defineComponent({
               qualityLabel = `auto ${adaptiveFormat.qualityLabel}`
             } else {
               qualityLabel = `auto ${newQualityLevel.height}p`
+            }
+
+            if (this.rememberVideoSettingsThroughoutSession) {
+              const qualityValue = qualityLabel.replace(/p|k/, '')
+              sessionStorage.setItem('quality', qualityValue)
             }
 
             // Can be run before createDashQualitySelector is called
@@ -859,6 +868,10 @@ export default defineComponent({
 
     updateVolume: function (_event) {
       // https://docs.videojs.com/html5#volume
+      if (!this.rememberVideoSettingsThroughoutSession) {
+        return
+      }
+
       if (sessionStorage.getItem('muted') === 'false' && this.player.volume() === 0) {
         // If video is muted by dragging volume slider, it doesn't change 'muted' in sessionStorage to true
         // hence compare it with 'false' and set volume to defaultVolume.
@@ -1352,6 +1365,9 @@ export default defineComponent({
       const newPlaybackRate = (this.player.playbackRate() + rate).toFixed(2)
 
       if (newPlaybackRate >= this.videoPlaybackRateInterval && newPlaybackRate <= this.maxVideoPlaybackRate) {
+        if (this.rememberVideoSettingsThroughoutSession) {
+          sessionStorage.setItem('playback', newPlaybackRate)
+        }
         this.player.playbackRate(newPlaybackRate)
       }
     },
