@@ -59,10 +59,7 @@
   &.grid {
     display: flex;
     flex-direction: column;
-
-    inline-size: 245px;
-    min-block-size: 230px;
-    padding-block-end: 20px;
+    align-items: center;
 
     .thumbnail {
       margin-block-end: 12px;

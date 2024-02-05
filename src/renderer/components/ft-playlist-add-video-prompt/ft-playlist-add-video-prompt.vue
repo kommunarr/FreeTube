@@ -7,34 +7,32 @@
         videoCount: toBeAddedToPlaylistVideoCount,
       }) }}
     </h2>
-    <p class="selected-count">
-      {{ $tc('User Playlists.AddVideoPrompt.N playlists selected', selectedPlaylistCount, {
-        playlistCount: selectedPlaylistCount,
-      }) }}
-    </p>
-    <ft-input
-      ref="searchBar"
-      :placeholder="$t('User Playlists.AddVideoPrompt.Search in Playlists')"
-      :show-clear-text-button="true"
-      :show-action-button="false"
-      @input="(input) => updateQueryDebounce(input)"
-      @clear="updateQueryDebounce('')"
-    />
-    <ft-select
-      v-if="allPlaylists.length > 1"
-      class="sortSelect"
-      :value="sortBy"
-      :select-names="sortBySelectNames"
-      :select-values="sortBySelectValues"
-      :placeholder="$t('User Playlists.Sort By.Sort By')"
-      @change="sortBy = $event"
-    />
-    <div class="playlists-container">
-      <ft-flex-box>
+    <div class="addToPlaylistTopSection">
+      <ft-input
+        class="playlistSearchBar"
+        ref="searchBar"
+        :placeholder="$t('User Playlists.AddVideoPrompt.Search in Playlists')"
+        :show-clear-text-button="true"
+        :show-action-button="false"
+        @input="(input) => updateQueryDebounce(input)"
+        @clear="updateQueryDebounce('')"
+      />
+      <ft-select
+        v-if="allPlaylists.length > 1"
+        class="sortSelect"
+        :value="sortBy"
+        :select-names="sortBySelectNames"
+        :select-values="sortBySelectValues"
+        :placeholder="$t('User Playlists.Sort By.Sort By')"
+        @change="sortBy = $event"
+      />
+    </div>
+    <div class="playlistsContainerOuter">
+      <ft-flex-box class="playlistsContainerInner">
         <div
           v-for="(playlist, index) in activePlaylists"
           :key="playlist._id"
-          class="playlist-selector-container"
+          class="playlistSelectorContainer"
         >
           <ft-playlist-selector
             tabindex="0"
@@ -46,7 +44,7 @@
         </div>
       </ft-flex-box>
     </div>
-    <div class="actions-container">
+    <div class="actionsContainer">
       <ft-flex-box>
         <ft-button
           :label="$t('User Playlists.Create New Playlist')"

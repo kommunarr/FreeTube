@@ -1,27 +1,33 @@
 .heading {
   text-align: center;
+  margin-block-end: 0;
 }
 
-.selected-count {
-  text-align: center;
+.addToPlaylistTopSection {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-evenly;
 }
 
 /* Style for `ft-prompt` */
-:deep(.promptCard) {
+:deep(.promptCard:not(.autosize)) {
   /* Currently only this prompt has enough content to make prompt too high */
   max-block-size: 95%;
+  max-inline-size: 500px;
+  position: relative;
+  margin-inline: auto;
 
   /* Some child(s) will grow vertically */
   display: flex;
   flex-direction: column;
 }
 
-.sortSelect {
-  /* Put it on the right */
-  margin-inline-start: auto;
+.playlistSearchBar {
+  margin-inline-end: 0;
 }
 
-.playlists-container {
+.playlistsContainerOuter {
   box-shadow: inset 0 0 5px rgba(0,0,0,.5);
 
   /* Use remaining height */
@@ -30,7 +36,11 @@
   overflow-y: scroll;
 }
 
-.playlist-selector-container {
+.playlistsContainerInner {
+  flex-direction: column;
+}
+
+.playlistSelectorContainer {
   /* Make them look selectable */
   cursor: pointer;
 }
