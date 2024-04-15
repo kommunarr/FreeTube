@@ -865,7 +865,7 @@ export default defineComponent({
         filters: [
           {
             name: this.$t('Settings.Data Settings.Playlist File'),
-            extensions: ['db']
+            extensions: ['db', 'csv']
           }
         ]
       }
@@ -874,6 +874,7 @@ export default defineComponent({
       if (response.canceled || response.filePaths?.length === 0) {
         return
       }
+
       let data
       try {
         data = await readFileFromDialog(response)
@@ -882,6 +883,196 @@ export default defineComponent({
         showToast(`${message}: ${err}`)
         return
       }
+
+      response.filePaths.forEach(filePath => {
+        if (filePath.endsWith('.csv')) {
+          this.importCsvYouTubePlaylists(data)
+        } else if (filePath.endsWith('.db')) {
+          this.importFreeTubePlaylists(data)
+        }
+      })
+    },
+
+    importCsvYouTubePlaylists: async function(textDecode) {
+      const youtubePlaylists = textDecode.split('\n').filter(sub => {
+        return sub !== ''
+      })
+      const subscriptions = []
+      const errorList = []
+
+      showToast(this.$t('Settings.Data Settings.This might take a while, please wait'))
+
+      this.updateShowProgressBar(true)
+      this.setProgressBarPercentage(0)
+      let count = 0
+
+      const splitCSVRegex = /(?:,|\n|^)("(?:(?:"")|[^"])*"|[^\n",]*|(?:\n|$))/g
+
+      const ytplaylists = youtubePlaylists.slice(1).map(yt => {
+        return [...yt.matchAll(splitCSVRegex)].map(s => {
+          let newVal = s[1]
+          if (newVal.startsWith('"')) {
+            newVal = newVal.substring(1, newVal.length - 2).replaceAll('""', '"')
+          }
+          return newVal
+        })
+      })
+      // .filter(channel => {
+      //   return channel.length > 0
+      // })
+      new Promise((resolve) => {
+        let finishCount = 0
+        ytplaylists.forEach(async (yt) => {
+          const { subscription, result } = await this.subscribeToChannel({
+            channelId: yt[0],
+            subscriptions: subscriptions,
+            channelName: yt[2],
+            count: count++,
+            total: ytplaylists.length
+          })
+          if (result === 1) {
+            subscriptions.push(subscription)
+          } else if (result === -1) {
+            errorList.push(yt)
+          }
+          finishCount++
+          if (finishCount === ytplaylists.length) {
+            resolve(true)
+          }
+        })
+      }).then(_ => {
+        this.primaryProfile.subscriptions = this.primaryProfile.subscriptions.concat(subscriptions)
+        this.updateProfile(this.primaryProfile)
+        if (errorList.length !== 0) {
+          errorList.forEach(e => { // log it to console for now, dedicated tab for 'error' channels needed
+            console.error(`failed to import ${e[2]}. Url to channel: ${e[1]}.`)
+          })
+          showToast(this.$t('Settings.Data Settings.One or more subscriptions were unable to be imported'))
+        } else {
+          showToast(this.$t('Settings.Data Settings.All subscriptions have been successfully imported'))
+        }
+      }).finally(_ => {
+        this.updateShowProgressBar(false)
+      })
+    },
+
+    handlePlaylistData(playlists) {
+      const requiredKeys = [
+        'playlistName',
+        'videos',
+      ]
+
+      const optionalKeys = [
+        'description',
+        'createdAt',
+      ]
+
+      const ignoredKeys = [
+        '_id',
+        'title',
+        'type',
+        'protected',
+        'lastUpdatedAt',
+        'lastPlayedAt',
+        'removeOnWatched',
+
+        'thumbnail',
+        'channelName',
+        'channelId',
+        'playlistId',
+        'videoCount',
+      ]
+
+      const requiredVideoKeys = [
+        'videoId',
+        'title',
+        'author',
+        'authorId',
+        'lengthSeconds',
+        'timeAdded',
+
+        // `playlistItemId` should be optional for backward compatibility
+        // 'playlistItemId',
+      ]
+
+      const playlistObject = {}
+
+      playlists.forEach((playlistData) => {
+        // We would technically already be done by the time the data is parsed,
+        // however we want to limit the possibility of malicious data being sent
+        // to the app, so we'll only grab the data we need here.
+
+        Object.keys(playlistData).forEach((key) => {
+          if ([requiredKeys, optionalKeys, ignoredKeys].every((ks) => !ks.includes(key))) {
+            const message = `${this.$t('Settings.Data Settings.Unknown data key')}: ${key}`
+            showToast(message)
+          } else if (key === 'videos') {
+            const videoArray = []
+            playlistData.videos.forEach((video) => {
+              const videoPropertyKeys = Object.keys(video)
+              const videoObjectHasAllRequiredKeys = requiredVideoKeys.every((k) => videoPropertyKeys.includes(k))
+
+              if (videoObjectHasAllRequiredKeys) {
+                videoArray.push(video)
+              }
+            })
+
+            playlistObject[key] = videoArray
+          } else if (!ignoredKeys.includes(key)) {
+            // Do nothing for keys to be ignored
+            playlistObject[key] = playlistData[key]
+          }
+        })
+
+        const playlistObjectKeys = Object.keys(playlistObject)
+        const playlistObjectHasAllRequiredKeys = requiredKeys.every((k) => playlistObjectKeys.includes(k))
+
+        if (playlistObjectHasAllRequiredKeys) {
+          const existingPlaylist = this.allPlaylists.find((playlist) => {
+            return playlist.playlistName === playlistObject.playlistName
+          })
+
+          if (existingPlaylist !== undefined) {
+            playlistObject.videos.forEach((video) => {
+              let videoExists = false
+              if (video.playlistItemId != null) {
+                // Find by `playlistItemId` if present
+                videoExists = existingPlaylist.videos.some((x) => {
+                  // Allow duplicate (by videoId) videos to be added
+                  return x.videoId === video.videoId && x.playlistItemId === video.playlistItemId
+                })
+              } else {
+                // Older playlist exports have no `playlistItemId` but have `timeAdded`
+                // Which might be duplicate for copied playlists with duplicate `videoId`
+                videoExists = existingPlaylist.videos.some((x) => {
+                  // Allow duplicate (by videoId) videos to be added
+                  return x.videoId === video.videoId && x.timeAdded === video.timeAdded
+                })
+              }
+
+              if (!videoExists) {
+                // Keep original `timeAdded` value
+                const payload = {
+                  _id: existingPlaylist._id,
+                  videoData: video,
+                }
+
+                this.addVideo(payload)
+              }
+            })
+            // Update playlist's `lastUpdatedAt`
+            this.updatePlaylist({ _id: existingPlaylist._id })
+          } else {
+            this.addPlaylist(playlistObject)
+          }
+        } else {
+          const message = this.$t('Settings.Data Settings.Playlist insufficient data', { playlist: playlistData.playlistName })
+          showToast(message)
+        }
+      })
+    },
+
+    importFreeTubePlaylists(data) {
       let playlists = null
 
       // for the sake of backwards compatibility,
