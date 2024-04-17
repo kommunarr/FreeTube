@@ -40,7 +40,6 @@ export default defineComponent({
       voteCount: '',
       postContent: '',
       commentCount: '',
-      isLoading: true,
       author: '',
       authorId: '',
     }
@@ -73,7 +72,7 @@ export default defineComponent({
         injectStylesUrls: [
           // This file is created with the copy webpack plugin in the web and renderer webpack configs.
           // If you add more modules, please remember to add their CSS files to the list in webpack config files.
-          createWebURL('/swiper.css')
+          createWebURL(`/swiper-${process.env.SWIPER_VERSION}.css`)
         ],
 
         a11y: true,
@@ -96,7 +95,7 @@ export default defineComponent({
         this.postText = 'Shared post'
         this.type = 'text'
         let authorThumbnails = ['', 'https://yt3.ggpht.com/ytc/AAUvwnjm-0qglHJkAHqLFsCQQO97G7cCNDuDLldsrn25Lg=s88-c-k-c0x00ffffff-no-rj']
-        if (!process.env.IS_ELECTRON || this.backendPreference === 'invidious') {
+        if (!process.env.SUPPORTS_LOCAL_API || this.backendPreference === 'invidious') {
           authorThumbnails = authorThumbnails.map(thumbnail => {
             thumbnail.url = youtubeImageUrlToInvidious(thumbnail.url)
             return thumbnail
@@ -107,7 +106,7 @@ export default defineComponent({
       }
       this.postText = autolinker.link(this.data.postText)
       const authorThumbnails = deepCopy(this.data.authorThumbnails)
-      if (!process.env.IS_ELECTRON || this.backendPreference === 'invidious') {
+      if (!process.env.SUPPORTS_LOCAL_API || this.backendPreference === 'invidious') {
         authorThumbnails.forEach(thumbnail => {
           thumbnail.url = youtubeImageUrlToInvidious(thumbnail.url)
         })
@@ -132,7 +131,6 @@ export default defineComponent({
       this.type = (this.data.postContent !== null && this.data.postContent !== undefined) ? this.data.postContent.type : 'text'
       this.author = this.data.author
       this.authorId = this.data.authorId
-      this.isLoading = false
     },
 
     getBestQualityImage(imageArray) {

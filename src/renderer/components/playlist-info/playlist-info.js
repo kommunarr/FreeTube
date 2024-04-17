@@ -5,10 +5,12 @@ import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
 import FtIconButton from '../ft-icon-button/ft-icon-button.vue'
 import FtInput from '../ft-input/ft-input.vue'
 import FtPrompt from '../ft-prompt/ft-prompt.vue'
+import FtButton from '../ft-button/ft-button.vue'
 import {
   formatNumber,
   showToast,
 } from '../../helpers/utils'
+import debounce from 'lodash.debounce'
 
 export default defineComponent({
   name: 'PlaylistInfo',
@@ -18,6 +20,7 @@ export default defineComponent({
     'ft-icon-button': FtIconButton,
     'ft-input': FtInput,
     'ft-prompt': FtPrompt,
+    'ft-button': FtButton,
   },
   props: {
     id: {
@@ -80,9 +83,24 @@ export default defineComponent({
       type: Boolean,
       required: true,
     },
+    searchVideoModeAllowed: {
+      type: Boolean,
+      required: true,
+    },
+    searchVideoModeEnabled: {
+      type: Boolean,
+      required: true,
+    },
+    searchQueryText: {
+      type: String,
+      required: true,
+    },
   },
   data: function () {
     return {
+      searchVideoMode: false,
+      query: '',
+      updateQueryDebounce: function() {},
       editMode: false,
       showDeletePlaylistPrompt: false,
       showRemoveVideosOnWatchPrompt: false,
@@ -232,6 +250,20 @@ export default defineComponent({
   created: function () {
     this.newTitle = this.title
     this.newDescription = this.description
+
+    if (this.videoCount > 0) {
+      // Only enable search video mode when viewing non empty playlists
+      this.searchVideoMode = this.searchVideoModeEnabled
+      this.query = this.searchQueryText
+    }
+
+    this.updateQueryDebounce = debounce(this.updateQuery, 500)
+  },
+  mounted: function () {
+    document.addEventListener('keydown', this.keyboardShortcutHandler)
+  },
+  beforeDestroy: function () {
+    document.removeEventListener('keydown', this.keyboardShortcutHandler)
   },
   methods: {
     toggleCopyVideosPrompt: function (force = false) {
@@ -371,6 +403,24 @@ export default defineComponent({
     disableQuickBookmark() {
       this.updateQuickBookmarkTargetPlaylistId(null)
       showToast(this.$t('User Playlists.SinglePlaylistView.Toast.Quick bookmark disabled'))
+    },
+
+    updateQuery(query) {
+      this.query = query
+      this.$emit('search-video-query-change', query)
+    },
+
+    keyboardShortcutHandler(event) {
+      switch (event.key) {
+        case 'F':
+        case 'f':
+          if (this.searchVideoModeAllowed && ((process.platform !== 'darwin' && event.ctrlKey) || (process.platform === 'darwin' && event.metaKey))) {
+            nextTick(() => {
+              // Some elements only present after rendering update
+              this.$refs.searchInput.focus()
+            })
+          }
+      }
     },
 
     ...mapActions([

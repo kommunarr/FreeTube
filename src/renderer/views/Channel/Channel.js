@@ -10,9 +10,16 @@ import FtAgeRestricted from '../../components/ft-age-restricted/ft-age-restricte
 import FtShareButton from '../../components/ft-share-button/ft-share-button.vue'
 import FtSubscribeButton from '../../components/ft-subscribe-button/ft-subscribe-button.vue'
 import ChannelAbout from '../../components/channel-about/channel-about.vue'
+import FtAutoLoadNextPageWrapper from '../../components/ft-auto-load-next-page-wrapper/ft-auto-load-next-page-wrapper.vue'
 
 import autolinker from 'autolinker'
-import { copyToClipboard, extractNumberFromString, formatNumber, showToast } from '../../helpers/utils'
+import {
+  setPublishedTimestampsInvidious,
+  copyToClipboard,
+  extractNumberFromString,
+  formatNumber,
+  showToast
+} from '../../helpers/utils'
 import { isNullOrEmpty } from '../../helpers/strings'
 import packageDetails from '../../../../package.json'
 import {
@@ -46,7 +53,8 @@ export default defineComponent({
     'ft-age-restricted': FtAgeRestricted,
     'ft-share-button': FtShareButton,
     'ft-subscribe-button': FtSubscribeButton,
-    'channel-about': ChannelAbout
+    'channel-about': ChannelAbout,
+    'ft-auto-load-next-page-wrapper': FtAutoLoadNextPageWrapper,
   },
   data: function () {
     return {
@@ -99,14 +107,10 @@ export default defineComponent({
       errorMessage: '',
       showSearchBar: true,
       showShareMenu: true,
-      videoLiveSelectValues: [
+      videoLiveShortSelectValues: [
         'newest',
         'popular',
         'oldest'
-      ],
-      shortSelectValues: [
-        'newest',
-        'popular'
       ],
       playlistSelectValues: [
         'newest',
@@ -171,18 +175,18 @@ export default defineComponent({
       return this.subscriptionInfo !== null
     },
 
-    videoLiveSelectNames: function () {
+    isSubscribedInAnyProfile: function () {
+      const profileList = this.$store.getters.getProfileList
+
+      // check the all channels profile
+      return profileList[0].subscriptions.some((channel) => channel.id === this.id)
+    },
+
+    videoLiveShortSelectNames: function () {
       return [
         this.$t('Channel.Videos.Sort Types.Newest'),
         this.$t('Channel.Videos.Sort Types.Most Popular'),
         this.$t('Channel.Videos.Sort Types.Oldest')
-      ]
-    },
-
-    shortSelectNames: function () {
-      return [
-        this.$t('Channel.Videos.Sort Types.Newest'),
-        this.$t('Channel.Videos.Sort Types.Most Popular')
       ]
     },
 
@@ -290,7 +294,7 @@ export default defineComponent({
       })
 
       return values
-    }
+    },
   },
   watch: {
     $route() {
@@ -349,7 +353,7 @@ export default defineComponent({
       this.errorMessage = ''
 
       // Re-enable auto refresh on sort value change AFTER update done
-      if (!process.env.IS_ELECTRON || this.backendPreference === 'invidious') {
+      if (!process.env.SUPPORTS_LOCAL_API || this.backendPreference === 'invidious') {
         this.getChannelInfoInvidious()
         this.autoRefreshOnSortByChangeEnabled = true
       } else {
@@ -447,7 +451,7 @@ export default defineComponent({
     }
 
     // Enable auto refresh on sort value change AFTER initial update done
-    if (!process.env.IS_ELECTRON || this.backendPreference === 'invidious') {
+    if (!process.env.SUPPORTS_LOCAL_API || this.backendPreference === 'invidious') {
       this.getChannelInfoInvidious()
       this.autoRefreshOnSortByChangeEnabled = true
     } else {
@@ -460,7 +464,7 @@ export default defineComponent({
     resolveChannelUrl: async function (url, tab = undefined) {
       let id
 
-      if (!process.env.IS_ELECTRON || this.backendPreference === 'invidious') {
+      if (!process.env.SUPPORTS_LOCAL_API || this.backendPreference === 'invidious') {
         id = await invidiousGetChannelId(url)
       } else {
         id = await getLocalChannelId(url)
@@ -756,7 +760,7 @@ export default defineComponent({
         this.showVideoSortBy = videosTab.filters.length > 1
 
         if (this.showVideoSortBy && this.videoSortBy !== 'newest') {
-          const index = this.videoLiveSelectValues.indexOf(this.videoSortBy)
+          const index = this.videoLiveShortSelectValues.indexOf(this.videoSortBy)
           videosTab = await videosTab.applyFilter(videosTab.filters[index])
         }
 
@@ -767,6 +771,16 @@ export default defineComponent({
         this.latestVideos = parseLocalChannelVideos(videosTab.videos, this.id, this.channelName)
         this.videoContinuationData = videosTab.has_continuation ? videosTab : null
         this.isElementListLoading = false
+
+        if (this.isSubscribedInAnyProfile && this.latestVideos.length > 0 && this.videoSortBy === 'newest') {
+          this.updateSubscriptionVideosCacheByChannel({
+            channelId: this.id,
+            // create a copy so that we only cache the first page
+            // if we use the same array, the store will get angry at us for modifying it outside of the store,
+            // when the user clicks load more
+            videos: [...this.latestVideos]
+          })
+        }
       } catch (err) {
         console.error(err)
         const errorMessage = this.$t('Local API Error (Click to copy)')
@@ -814,7 +828,7 @@ export default defineComponent({
         this.showShortSortBy = shortsTab.filters.length > 1
 
         if (this.showShortSortBy && this.shortSortBy !== 'newest') {
-          const index = this.shortSelectValues.indexOf(this.shortSortBy)
+          const index = this.videoLiveShortSelectValues.indexOf(this.shortSortBy)
           shortsTab = await shortsTab.applyFilter(shortsTab.filters[index])
         }
 
@@ -825,6 +839,16 @@ export default defineComponent({
         this.latestShorts = parseLocalChannelShorts(shortsTab.videos, this.id, this.channelName)
         this.shortContinuationData = shortsTab.has_continuation ? shortsTab : null
         this.isElementListLoading = false
+
+        if (this.isSubscribedInAnyProfile && this.latestShorts.length > 0 && this.shortSortBy === 'newest') {
+          // As the shorts tab API response doesn't include the published dates,
+          // we can't just write the results to the subscriptions cache like we do with videos and live (can't sort chronologically without the date).
+          // However we can still update the metadata in the cache such as the view count and title that might have changed since it was cached
+          this.updateSubscriptionShortsCacheWithChannelPageShorts({
+            channelId: this.id,
+            videos: this.latestShorts
+          })
+        }
       } catch (err) {
         console.error(err)
         const errorMessage = this.$t('Local API Error (Click to copy)')
@@ -872,7 +896,7 @@ export default defineComponent({
         this.showLiveSortBy = liveTab.filters.length > 1
 
         if (this.showLiveSortBy && this.liveSortBy !== 'newest') {
-          const index = this.videoLiveSelectValues.indexOf(this.liveSortBy)
+          const index = this.videoLiveShortSelectValues.indexOf(this.liveSortBy)
           liveTab = await liveTab.applyFilter(liveTab.filters[index])
         }
 
@@ -880,9 +904,28 @@ export default defineComponent({
           return
         }
 
-        this.latestLive = parseLocalChannelVideos(liveTab.videos, this.id, this.channelName)
+        // work around YouTube bug where it will return a bunch of responses with only continuations in them
+        // e.g. https://www.youtube.com/@TWLIVES/streams
+
+        let videos = liveTab.videos
+        while (videos.length === 0 && liveTab.has_continuation) {
+          liveTab = await liveTab.getContinuation()
+          videos = liveTab.videos
+        }
+
+        this.latestLive = parseLocalChannelVideos(videos, this.id, this.channelName)
         this.liveContinuationData = liveTab.has_continuation ? liveTab : null
         this.isElementListLoading = false
+
+        if (this.isSubscribedInAnyProfile && this.latestLive.length > 0 && this.liveSortBy === 'newest') {
+          this.updateSubscriptionLiveCacheByChannel({
+            channelId: this.id,
+            // create a copy so that we only cache the first page
+            // if we use the same array, the store will get angry at us for modifying it outside of the store,
+            // when the user clicks load more
+            videos: [...this.latestLive]
+          })
+        }
       } catch (err) {
         console.error(err)
         const errorMessage = this.$t('Local API Error (Click to copy)')
@@ -949,7 +992,6 @@ export default defineComponent({
             thumbnailUrl: youtubeImageUrlToInvidious(thumbnailUrl, this.currentInvidiousInstance)
           }
         })
-        this.latestVideos = response.latestVideos
 
         if (response.authorBanners instanceof Array && response.authorBanners.length > 0) {
           this.bannerUrl = youtubeImageUrlToInvidious(response.authorBanners[0].url, this.currentInvidiousInstance)
@@ -1011,7 +1053,7 @@ export default defineComponent({
         showToast(`${errorMessage}: ${err}`, 10000, () => {
           copyToClipboard(err)
         })
-        if (process.env.IS_ELECTRON && this.backendPreference === 'invidious' && this.backendFallback) {
+        if (process.env.SUPPORTS_LOCAL_API && this.backendPreference === 'invidious' && this.backendFallback) {
           showToast(this.$t('Falling back to Local API'))
           this.getChannelLocal()
         } else {
@@ -1045,6 +1087,8 @@ export default defineComponent({
       }
 
       invidiousAPICall(payload).then((response) => {
+        setPublishedTimestampsInvidious(response.videos)
+
         if (more) {
           this.latestVideos = this.latestVideos.concat(response.videos)
         } else {
@@ -1052,6 +1096,15 @@ export default defineComponent({
         }
         this.videoContinuationData = response.continuation || null
         this.isElementListLoading = false
+
+        if (this.isSubscribedInAnyProfile && !more && this.latestVideos.length > 0 && this.videoSortBy === 'newest') {
+          this.updateSubscriptionVideosCacheByChannel({
+            channelId: this.id,
+            // create a copy so that we only cache the first page
+            // if we use the same array, it will also contain all the next pages
+            videos: [...this.latestVideos]
+          })
+        }
       }).catch((err) => {
         console.error(err)
         const errorMessage = this.$t('Invidious API Error (Click to copy)')
@@ -1090,7 +1143,7 @@ export default defineComponent({
         // https://github.com/iv-org/invidious/issues/3801
         response.videos.forEach(video => {
           video.isUpcoming = false
-          delete video.publishedText
+          delete video.published
           delete video.premiereTimestamp
         })
 
@@ -1101,6 +1154,17 @@ export default defineComponent({
         }
         this.shortContinuationData = response.continuation || null
         this.isElementListLoading = false
+
+        if (this.isSubscribedInAnyProfile && !more && this.latestShorts.length > 0 && this.shortSortBy === 'newest') {
+          // As the shorts tab API response doesn't include the published dates,
+          // we can't just write the results to the subscriptions cache like we do with videos and live (can't sort chronologically without the date).
+          // However we can still update the metadata in the cache e.g. adding the duration, as that isn't included in the RSS feeds
+          // and updating the view count and title that might have changed since it was cached
+          this.updateSubscriptionShortsCacheWithChannelPageShorts({
+            channelId: this.id,
+            videos: this.latestShorts
+          })
+        }
       }).catch((err) => {
         console.error(err)
         const errorMessage = this.$t('Invidious API Error (Click to copy)')
@@ -1135,6 +1199,8 @@ export default defineComponent({
       }
 
       invidiousAPICall(payload).then((response) => {
+        setPublishedTimestampsInvidious(response.videos)
+
         if (more) {
           this.latestLive.push(...response.videos)
         } else {
@@ -1142,6 +1208,16 @@ export default defineComponent({
         }
         this.liveContinuationData = response.continuation || null
         this.isElementListLoading = false
+
+        if (this.isSubscribedInAnyProfile && !more && this.latestLive.length > 0 && this.liveSortBy === 'newest') {
+          this.updateSubscriptionLiveCacheByChannel({
+            channelId: this.id,
+            // create a copy so that we only cache the first page
+            // if we use the same array, the store will get angry at us for modifying it outside of the store,
+            // when the user clicks load more
+            videos: [...this.latestLive]
+          })
+        }
       }).catch((err) => {
         console.error(err)
         const errorMessage = this.$t('Invidious API Error (Click to copy)')
@@ -1255,7 +1331,7 @@ export default defineComponent({
         showToast(`${errorMessage}: ${err}`, 10000, () => {
           copyToClipboard(err)
         })
-        if (process.env.IS_ELECTRON && this.backendPreference === 'invidious' && this.backendFallback) {
+        if (process.env.SUPPORTS_LOCAL_API && this.backendPreference === 'invidious' && this.backendFallback) {
           showToast(this.$t('Falling back to Local API'))
           if (!this.channelInstance) {
             this.channelInstance = await getLocalChannel(this.id)
@@ -1296,7 +1372,7 @@ export default defineComponent({
         showToast(`${errorMessage}: ${err}`, 10000, () => {
           copyToClipboard(err)
         })
-        if (process.env.IS_ELECTRON && this.backendPreference === 'invidious' && this.backendFallback) {
+        if (process.env.SUPPORTS_LOCAL_API && this.backendPreference === 'invidious' && this.backendFallback) {
           showToast(this.$t('Falling back to Local API'))
           this.getChannelLocal()
         } else {
@@ -1375,7 +1451,7 @@ export default defineComponent({
         showToast(`${errorMessage}: ${err}`, 10000, () => {
           copyToClipboard(err)
         })
-        if (process.env.IS_ELECTRON && this.backendPreference === 'invidious' && this.backendFallback) {
+        if (process.env.SUPPORTS_LOCAL_API && this.backendPreference === 'invidious' && this.backendFallback) {
           showToast(this.$t('Falling back to Local API'))
           if (!this.channelInstance) {
             this.channelInstance = await getLocalChannel(this.id)
@@ -1409,7 +1485,7 @@ export default defineComponent({
         showToast(`${errorMessage}: ${err}`, 10000, () => {
           copyToClipboard(err)
         })
-        if (process.env.IS_ELECTRON && this.backendPreference === 'invidious' && this.backendFallback) {
+        if (process.env.SUPPORTS_LOCAL_API && this.backendPreference === 'invidious' && this.backendFallback) {
           showToast(this.$t('Falling back to Local API'))
           this.getChannelLocal()
         } else {
@@ -1444,7 +1520,7 @@ export default defineComponent({
         })
         if (this.backendPreference === 'local' && this.backendFallback) {
           showToast(this.$t('Falling back to Invidious API'))
-          this.getChannelPodcastsInvidious()
+          this.channelInvidiousPodcasts()
         } else {
           this.isLoading = false
         }
@@ -1488,7 +1564,7 @@ export default defineComponent({
         showToast(`${errorMessage}: ${err}`, 10000, () => {
           copyToClipboard(err)
         })
-        if (process.env.IS_ELECTRON && this.backendPreference === 'invidious' && this.backendFallback) {
+        if (process.env.SUPPORTS_LOCAL_API && this.backendPreference === 'invidious' && this.backendFallback) {
           showToast(this.$t('Falling back to Local API'))
           if (!this.channelInstance) {
             this.channelInstance = await getLocalChannel(this.id)
@@ -1522,7 +1598,7 @@ export default defineComponent({
         showToast(`${errorMessage}: ${err}`, 10000, () => {
           copyToClipboard(err)
         })
-        if (process.env.IS_ELECTRON && this.backendPreference === 'invidious' && this.backendFallback) {
+        if (process.env.SUPPORTS_LOCAL_API && this.backendPreference === 'invidious' && this.backendFallback) {
           showToast(this.$t('Falling back to Local API'))
           this.getChannelLocal()
         } else {
@@ -1559,6 +1635,19 @@ export default defineComponent({
 
         this.latestCommunityPosts = parseLocalCommunityPosts(posts)
         this.communityContinuationData = communityTab.has_continuation ? communityTab : null
+
+        if (this.latestCommunityPosts.length > 0) {
+          this.latestCommunityPosts.forEach(post => {
+            post.authorId = this.id
+          })
+          this.updateSubscriptionPostsCacheByChannel({
+            channelId: this.id,
+            // create a copy so that we only cache the first page
+            // if we use the same array, the store will get angry at us for modifying it outside of the store,
+            // when the user clicks load more
+            posts: [...this.latestCommunityPosts]
+          })
+        }
       } catch (err) {
         console.error(err)
         const errorMessage = this.$t('Local API Error (Click to copy)')
@@ -1610,13 +1699,26 @@ export default defineComponent({
           this.latestCommunityPosts = posts
         }
         this.communityContinuationData = continuation
+
+        if (this.isSubscribedInAnyProfile && !more && this.latestCommunityPosts.length > 0) {
+          this.latestCommunityPosts.forEach(post => {
+            post.authorId = this.id
+          })
+          this.updateSubscriptionPostsCacheByChannel({
+            channelId: this.id,
+            // create a copy so that we only cache the first page
+            // if we use the same array, the store will get angry at us for modifying it outside of the store,
+            // when the user clicks load more
+            posts: [...this.latestCommunityPosts]
+          })
+        }
       }).catch(async (err) => {
         console.error(err)
         const errorMessage = this.$t('Invidious API Error (Click to copy)')
         showToast(`${errorMessage}: ${err}`, 10000, () => {
           copyToClipboard(err)
         })
-        if (process.env.IS_ELECTRON && this.backendPreference === 'invidious' && this.backendFallback) {
+        if (process.env.SUPPORTS_LOCAL_API && this.backendPreference === 'invidious' && this.backendFallback) {
           showToast(this.$t('Falling back to Local API'))
           if (!this.channelInstance) {
             this.channelInstance = await getLocalChannel(this.id)
@@ -1825,6 +1927,7 @@ export default defineComponent({
       }
 
       invidiousAPICall(payload).then((response) => {
+        setPublishedTimestampsInvidious(response.filter(item => item.type === 'video'))
         if (this.hideChannelPlaylists) {
           this.searchResults = this.searchResults.concat(response.filter(item => item.type !== 'playlist'))
         } else {
@@ -1838,7 +1941,7 @@ export default defineComponent({
         showToast(`${errorMessage}: ${err}`, 10000, () => {
           copyToClipboard(err)
         })
-        if (process.env.IS_ELECTRON && this.backendPreference === 'invidious' && this.backendFallback) {
+        if (process.env.SUPPORTS_LOCAL_API && this.backendPreference === 'invidious' && this.backendFallback) {
           showToast(this.$t('Falling back to Local API'))
           this.searchChannelLocal()
         } else {
@@ -1849,7 +1952,11 @@ export default defineComponent({
 
     ...mapActions([
       'showOutlines',
-      'updateSubscriptionDetails'
+      'updateSubscriptionDetails',
+      'updateSubscriptionVideosCacheByChannel',
+      'updateSubscriptionLiveCacheByChannel',
+      'updateSubscriptionShortsCacheWithChannelPageShorts',
+      'updateSubscriptionPostsCacheByChannel'
     ])
   }
 })

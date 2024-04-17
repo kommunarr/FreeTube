@@ -11,6 +11,8 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 const isDevMode = process.env.NODE_ENV === 'development'
 
+const { version: swiperVersion } = JSON.parse(readFileSync(path.join(__dirname, '../node_modules/swiper/package.json')))
+
 const processLocalesPlugin = new ProcessLocalesPlugin({
   compress: !isDevMode,
   inputDir: path.join(__dirname, '../static/locales'),
@@ -117,16 +119,15 @@ const config = {
     new webpack.DefinePlugin({
       'process.env.IS_ELECTRON': true,
       'process.env.IS_ELECTRON_MAIN': false,
+      'process.env.SUPPORTS_LOCAL_API': true,
       'process.env.LOCALE_NAMES': JSON.stringify(processLocalesPlugin.localeNames),
-      'process.env.GEOLOCATION_NAMES': JSON.stringify(readdirSync(path.join(__dirname, '..', 'static', 'geolocations')).map(filename => filename.replace('.json', '')))
+      'process.env.GEOLOCATION_NAMES': JSON.stringify(readdirSync(path.join(__dirname, '..', 'static', 'geolocations')).map(filename => filename.replace('.json', ''))),
+      'process.env.SWIPER_VERSION': `'${swiperVersion}'`
     }),
     new HtmlWebpackPlugin({
       excludeChunks: ['processTaskWorker'],
       filename: 'index.html',
-      template: path.resolve(__dirname, '../src/index.ejs'),
-      nodeModules: isDevMode
-        ? path.resolve(__dirname, '../node_modules')
-        : false,
+      template: path.resolve(__dirname, '../src/index.ejs')
     }),
     new VueLoaderPlugin(),
     new MiniCssExtractPlugin({
@@ -137,7 +138,7 @@ const config = {
       patterns: [
         {
           from: path.join(__dirname, '../node_modules/swiper/modules/{a11y,navigation,pagination}-element.css').replaceAll('\\', '/'),
-          to: 'swiper.css',
+          to: `swiper-${swiperVersion}.css`,
           context: path.join(__dirname, '../node_modules/swiper/modules'),
           transformAll: (assets) => {
             return Buffer.concat(assets.map(asset => asset.data))

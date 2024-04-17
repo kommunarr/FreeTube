@@ -1,6 +1,7 @@
 <template>
   <div class="ftIconButton">
     <font-awesome-icon
+      ref="iconButton"
       class="iconButton"
       :title="title"
       :icon="icon"
@@ -65,6 +66,7 @@
           top: dropdownPositionY === 'top'
         }"
         @focusout="handleDropdownFocusOut"
+        @keydown.esc.stop="handleDropdownEscape"
       >
         <slot>
           <ul

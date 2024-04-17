@@ -166,6 +166,7 @@
         <ft-share-button
           v-if="sharePlaylistButtonVisible"
           :id="id"
+          class="sharePlaylistIcon"
           :dropdown-position-y="description ? 'top' : 'bottom'"
           share-target-type="Playlist"
         />
@@ -184,6 +185,22 @@
         :option-names="deletePlaylistPromptNames"
         :option-values="deletePlaylistPromptValues"
         @click="handleRemoveVideosOnWatchPromptAnswer"
+      />
+    </div>
+
+    <div
+      v-if="searchVideoModeAllowed"
+      class="searchInputsRow"
+    >
+      <ft-input
+        ref="searchInput"
+        class="searchInput"
+        :placeholder="$t('User Playlists.SinglePlaylistView.Search for Videos')"
+        :show-clear-text-button="true"
+        :show-action-button="false"
+        :value="query"
+        @input="(input) => updateQueryDebounce(input)"
+        @clear="updateQueryDebounce('')"
       />
     </div>
   </div>

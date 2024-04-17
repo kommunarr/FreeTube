@@ -6,7 +6,7 @@ import FtElementList from '../../components/ft-element-list/ft-element-list.vue'
 import FtIconButton from '../../components/ft-icon-button/ft-icon-button.vue'
 import FtFlexBox from '../../components/ft-flex-box/ft-flex-box.vue'
 
-import { copyToClipboard, showToast } from '../../helpers/utils'
+import { copyToClipboard, setPublishedTimestampsInvidious, showToast } from '../../helpers/utils'
 import { getLocalTrending } from '../../helpers/api/local'
 import { invidiousAPICall } from '../../helpers/api/invidious'
 
@@ -85,7 +85,7 @@ export default defineComponent({
         this.$store.commit('clearTrendingCache')
       }
 
-      if (!process.env.IS_ELECTRON || this.backendPreference === 'invidious') {
+      if (!process.env.SUPPORTS_LOCAL_API || this.backendPreference === 'invidious') {
         this.getTrendingInfoInvidious()
       } else {
         this.getTrendingInfoLocal()
@@ -146,6 +146,8 @@ export default defineComponent({
           return item.type === 'video' || item.type === 'channel' || item.type === 'playlist'
         })
 
+        setPublishedTimestampsInvidious(returnData.filter(item => item.type === 'video'))
+
         this.shownResults = returnData
         this.isLoading = false
         this.$store.commit('setTrendingCache', { value: returnData, page: this.currentTab })
@@ -159,7 +161,7 @@ export default defineComponent({
           copyToClipboard(err.responseText)
         })
 
-        if (process.env.IS_ELECTRON && (this.backendPreference === 'invidious' && this.backendFallback)) {
+        if (process.env.SUPPORTS_LOCAL_API && (this.backendPreference === 'invidious' && this.backendFallback)) {
           showToast(this.$t('Falling back to Local API'))
           this.getTrendingInfoLocal()
         } else {
