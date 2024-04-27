@@ -3,6 +3,7 @@ import { mapActions } from 'vuex'
 import FtInput from '../ft-input/ft-input.vue'
 import FtSearchFilters from '../ft-search-filters/ft-search-filters.vue'
 import FtProfileSelector from '../ft-profile-selector/ft-profile-selector.vue'
+import FtIconButton from '../ft-icon-button/ft-icon-button.vue'
 import debounce from 'lodash.debounce'
 
 import { IpcChannels } from '../../../constants'
@@ -14,6 +15,7 @@ import { invidiousAPICall } from '../../helpers/api/invidious'
 export default defineComponent({
   name: 'TopNav',
   components: {
+    FtIconButton,
     FtInput,
     FtSearchFilters,
     FtProfileSelector
@@ -24,7 +26,6 @@ export default defineComponent({
       showSearchContainer: true,
       showFilters: false,
       searchFilterValueChanged: false,
-      historyIndex: 1,
       isForwardOrBack: false,
       isArrowBackwardDisabled: true,
       isArrowForwardDisabled: true,
@@ -94,6 +95,22 @@ export default defineComponent({
 
     newWindowText: function () {
       return this.$t('Open New Window')
+    },
+
+    sessionNavigationHistory: function () {
+      return this.$store.getters.getSessionNavigationHistory
+    },
+
+    sessionNavigationHistoryCurrentIndex: function () {
+      return this.$store.getters.getSessionNavigationHistoryCurrentIndex
+    },
+
+    sessionNavigationHistoryPastRouteNames: function () {
+      return this.sessionNavigationHistory.slice(0, this.sessionNavigationHistoryCurrentIndex)
+    },
+
+    sessionNavigationHistoryFutureRouteNames: function () {
+      return this.sessionNavigationHistory.slice(this.sessionNavigationHistoryCurrentIndex + 1)
     }
   },
   mounted: function () {
@@ -302,9 +319,9 @@ export default defineComponent({
       this.searchFilterValueChanged = filterValueChanged
     },
 
-    navigateHistory: function () {
+    navigateHistory: function (toRoute) {
       if (!this.isForwardOrBack) {
-        this.historyIndex = window.history.length
+        this.$store.commit('navigateSessionNavigationHistoryForward', toRoute)
         this.isArrowBackwardDisabled = false
         this.isArrowForwardDisabled = true
       } else {
@@ -312,35 +329,46 @@ export default defineComponent({
       }
     },
 
-    historyBack: function () {
+    historyBack: function (option) {
+      // console.log(option)
+      if (option != null) this.goToSessionNavigationHistoryIndex(this.sessionNavigationHistoryFutureRouteNames.length - option)
       this.isForwardOrBack = true
       window.history.back()
+      this.$store.commit('navigateSessionNavigationHistoryForward')
 
-      if (this.historyIndex > 1) {
-        this.historyIndex--
+      if (this.sessionNavigationHistoryCurrentIndex > 1) {
+        this.sessionNavigationHistoryCurrentIndex--
         this.isArrowForwardDisabled = false
-        if (this.historyIndex === 1) {
+        if (this.sessionNavigationHistoryCurrentIndex === 1) {
           this.isArrowBackwardDisabled = true
         }
       }
     },
 
-    historyForward: function () {
+    historyForward: function (option) {
+      // console.log(option)
+      if (option != null) this.goToSessionNavigationHistoryIndex(this.sessionNavigationHistoryFutureRouteNames.length + option)
       this.isForwardOrBack = true
       window.history.forward()
+      this.$store.commit('navigateSessionNavigationHistoryForward')
 
-      if (this.historyIndex < window.history.length) {
-        this.historyIndex++
+      if (this.sessionNavigationHistoryCurrentIndex < window.history.length) {
+        this.sessionNavigationHistoryCurrentIndex++
         this.isArrowBackwardDisabled = false
 
-        if (this.historyIndex === window.history.length) {
+        if (this.sessionNavigationHistoryCurrentIndex === window.history.length) {
           this.isArrowForwardDisabled = true
         }
       }
     },
 
+    goToSessionNavigationHistoryIndex: function (n) {
+      window.history.go(this.sessionNavigationHistoryCurrentIndex + n)
+      this.$store.commit('setSessionNavigationHistoryCurrentIndex', n)
+    },
+
     toggleSideNav: function () {
-      this.$store.commit('toggleSideNav')
+      this.$store.$store.commit('toggleSideNav')
     },
 
     createNewWindow: function () {

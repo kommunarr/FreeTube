@@ -63,6 +63,10 @@ export default defineComponent({
     dropdownModalOnMobile: {
       type: Boolean,
       default: false
+    },
+    openOnRightOrLongClick: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ['click'],
@@ -91,9 +95,11 @@ export default defineComponent({
       this.dropdownShown = false
     },
 
-    handleIconClick: function () {
+    handleIconClick: function (event, isRightClick) {
       if (this.disabled) { return }
-      if (this.forceDropdown || (this.dropdownOptions.length > 0)) {
+      if ((this.openOnRightOrLongClick && isRightClick) ||
+        (this.forceDropdown || (this.dropdownOptions.length > 0))
+      ) {
         this.dropdownShown = !this.dropdownShown
 
         if (this.dropdownShown && !this.useModal) {
@@ -108,8 +114,12 @@ export default defineComponent({
       }
     },
 
-    handleIconMouseDown: function () {
+    handleIconMouseDown: function (event) {
       if (this.disabled) { return }
+      if (this.openOnRightOrLongClick && event.which === 3) {
+        this.handleIconClick(event, true)
+        return
+      }
       if (this.dropdownShown) {
         this.mouseDownOnIcon = true
       }
