@@ -101,6 +101,7 @@ export default defineComponent({
         return
       }
 
+      // console.log(isRightClick)
       if ((this.openOnRightOrLongClick && isRightClick) || this.forceDropdown || this.dropdownOptions.length > 0) {
         this.dropdownShown = !this.dropdownShown
 

@@ -15,7 +15,6 @@
       />
       <ft-icon-button
         :aria-disabled="isArrowBackwardDisabled"
-        class="navIcon"
         :class="{ arrowBackwardDisabled: isArrowBackwardDisabled}"
         :icon="['fas', 'arrow-left']"
         theme="base-no-default"
@@ -30,7 +29,6 @@
       />
       <ft-icon-button
         :aria-disabled="isArrowForwardDisabled"
-        class="navIcon"
         :class="{ arrowForwardDisabled: isArrowForwardDisabled}"
         :icon="['fas', 'arrow-right']"
         theme="base-no-default"
