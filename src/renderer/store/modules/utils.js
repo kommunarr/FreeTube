@@ -35,6 +35,8 @@ const state = {
   showProgressBar: false,
   showAddToPlaylistPrompt: false,
   showCreatePlaylistPrompt: false,
+  showSearchFilters: false,
+  searchFilterValueChanged: false,
   progressBarPercentage: 0,
   toBeAddedToPlaylistVideoList: [],
   newPlaylistDefaultProperties: {},
@@ -46,7 +48,8 @@ const state = {
     sortBy: 'relevance',
     time: '',
     type: 'all',
-    duration: ''
+    duration: '',
+    features: [],
   },
   externalPlayerNames: [],
   externalPlayerValues: [],
@@ -60,19 +63,19 @@ const state = {
 }
 
 const getters = {
-  getIsSideNavOpen () {
+  getIsSideNavOpen(state) {
     return state.isSideNavOpen
   },
 
-  getOutlinesHidden() {
+  getOutlinesHidden(state) {
     return state.outlinesHidden
   },
 
-  getCurrentVolume () {
+  getCurrentVolume(state) {
     return state.currentVolume
   },
 
-  getSessionSearchHistory () {
+  getSessionSearchHistory(state) {
     return state.sessionSearchHistory
   },
 
@@ -88,79 +91,87 @@ const getters = {
     return state.deArrowCache
   },
 
-  getPopularCache () {
+  getPopularCache(state) {
     return state.popularCache
   },
 
-  getTrendingCache () {
+  getTrendingCache(state) {
     return state.trendingCache
   },
 
-  getCachedPlaylist() {
+  getCachedPlaylist(state) {
     return state.cachedPlaylist
   },
 
-  getSearchSettings () {
+  getSearchSettings(state) {
     return state.searchSettings
   },
 
-  getShowAddToPlaylistPrompt () {
+  getSearchFilterValueChanged(state) {
+    return state.searchFilterValueChanged
+  },
+
+  getShowAddToPlaylistPrompt(state) {
     return state.showAddToPlaylistPrompt
   },
 
-  getShowCreatePlaylistPrompt () {
+  getShowCreatePlaylistPrompt(state) {
     return state.showCreatePlaylistPrompt
   },
 
-  getToBeAddedToPlaylistVideoList () {
+  getShowSearchFilters(state) {
+    return state.showSearchFilters
+  },
+
+  getToBeAddedToPlaylistVideoList(state) {
     return state.toBeAddedToPlaylistVideoList
   },
 
-  getNewPlaylistDefaultProperties () {
+  getNewPlaylistDefaultProperties(state) {
     return state.newPlaylistDefaultProperties
   },
 
-  getNewPlaylistVideoObject () {
+  getNewPlaylistVideoObject(state) {
     return state.newPlaylistVideoObject
   },
 
-  getShowProgressBar () {
+  getShowProgressBar(state) {
     return state.showProgressBar
   },
 
-  getProgressBarPercentage () {
+  getProgressBarPercentage(state) {
     return state.progressBarPercentage
   },
 
-  getRegionNames () {
+  getRegionNames(state) {
     return state.regionNames
   },
 
-  getRegionValues () {
+  getRegionValues(state) {
     return state.regionValues
   },
 
-  getRecentBlogPosts () {
+  getRecentBlogPosts(state) {
     return state.recentBlogPosts
   },
 
-  getExternalPlayerNames () {
+  getExternalPlayerNames(state) {
     return state.externalPlayerNames
   },
 
-  getExternalPlayerValues () {
+  getExternalPlayerValues(state) {
     return state.externalPlayerValues
   },
 
-  getExternalPlayerCmdArguments () {
+  getExternalPlayerCmdArguments (state) {
     return state.externalPlayerCmdArguments
   },
 
-  getLastTrendingRefreshTimestamp() {
+  getLastTrendingRefreshTimestamp(state) {
     return state.lastTrendingRefreshTimestamp
   },
 
-  getLastPopularRefreshTimestamp() {
+  getLastPopularRefreshTimestamp(state) {
     return state.lastPopularRefreshTimestamp
   },
 
@@ -178,7 +189,7 @@ const getters = {
 
   getLastVideoRefreshTimestampByProfile: (state) => (profileId) => {
     return state.lastVideoRefreshTimestampByProfile[profileId]
-  }
+  },
 }
 
 const actions = {
@@ -388,6 +399,14 @@ const actions = {
     commit('setShowCreatePlaylistPrompt', false)
   },
 
+  showSearchFilters ({ commit }) {
+    commit('setShowSearchFilters', true)
+  },
+
+  hideSearchFilters ({ commit }) {
+    commit('setShowSearchFilters', false)
+  },
+
   updateShowProgressBar ({ commit }, value) {
     commit('setShowProgressBar', value)
   },
@@ -520,7 +539,8 @@ const actions = {
           sortBy: searchSettings.sortBy,
           time: searchSettings.time,
           type: searchSettings.type,
-          duration: searchSettings.duration
+          duration: searchSettings.duration,
+          features: searchSettings.features
         }
 
         for (const [param, value] of url.searchParams) {
@@ -868,6 +888,10 @@ const mutations = {
     state.showCreatePlaylistPrompt = payload
   },
 
+  setShowSearchFilters (state, payload) {
+    state.showSearchFilters = payload
+  },
+
   setToBeAddedToPlaylistVideoList (state, payload) {
     state.toBeAddedToPlaylistVideoList = payload
   },
@@ -928,6 +952,10 @@ const mutations = {
     state.cachedPlaylist = value
   },
 
+  setSearchFilterValueChanged (state, value) {
+    state.searchFilterValueChanged = value
+  },
+
   setSearchSortBy (state, value) {
     state.searchSettings.sortBy = value
   },
@@ -942,6 +970,10 @@ const mutations = {
 
   setSearchDuration (state, value) {
     state.searchSettings.duration = value
+  },
+
+  setSearchFeatures (state, value) {
+    state.searchSettings.features = value
   },
 
   setRegionNames (state, value) {

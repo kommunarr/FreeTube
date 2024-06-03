@@ -69,7 +69,7 @@ export default defineComponent({
       default: false
     }
   },
-  emits: ['click'],
+  emits: ['click', 'disabled-click'],
   data: function () {
     return {
       dropdownShown: false,
@@ -95,11 +95,13 @@ export default defineComponent({
       this.dropdownShown = false
     },
 
-    handleIconClick: function (event, isRightClick) {
-      if (this.disabled) { return }
-      if ((this.openOnRightOrLongClick && isRightClick) ||
-        (this.forceDropdown || (this.dropdownOptions.length > 0))
-      ) {
+    handleIconClick: function (isRightClick = false) {
+      if (this.disabled) {
+        this.$emit('disabled-click')
+        return
+      }
+
+      if ((this.openOnRightOrLongClick && isRightClick) || this.forceDropdown || this.dropdownOptions.length > 0) {
         this.dropdownShown = !this.dropdownShown
 
         if (this.dropdownShown && !this.useModal) {
@@ -116,6 +118,8 @@ export default defineComponent({
 
     handleIconMouseDown: function (event) {
       if (this.disabled) { return }
+
+      //
       if (this.openOnRightOrLongClick && event.which === 3) {
         this.handleIconClick(event, true)
         return

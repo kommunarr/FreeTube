@@ -1,7 +1,7 @@
 import { defineComponent } from 'vue'
 
 export default defineComponent({
-  name: 'FtElementList',
+  name: 'FtRadioButton',
   props: {
     title: {
       type: String,
@@ -18,6 +18,10 @@ export default defineComponent({
     disabled: {
       type: Boolean,
       default: false
+    },
+    initialValueIndex: {
+      type: Number,
+      default: 0
     }
   },
   emits: ['change'],
@@ -33,9 +37,9 @@ export default defineComponent({
       return name.toLowerCase() + this.id
     }
   },
-  mounted: function () {
+  created: function () {
     this.id = this._uid
-    this.selectedValue = this.values[0]
+    this.selectedValue = this.values[this.initialValueIndex]
   },
   methods: {
     updateSelectedValue: function (value) {

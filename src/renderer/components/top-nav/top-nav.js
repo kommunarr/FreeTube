@@ -1,12 +1,11 @@
 import { defineComponent } from 'vue'
 import { mapActions } from 'vuex'
 import FtInput from '../ft-input/ft-input.vue'
-import FtSearchFilters from '../ft-search-filters/ft-search-filters.vue'
 import FtProfileSelector from '../ft-profile-selector/ft-profile-selector.vue'
 import FtIconButton from '../ft-icon-button/ft-icon-button.vue'
 import debounce from 'lodash.debounce'
 
-import { IpcChannels } from '../../../constants'
+import { IpcChannels, MOBILE_WIDTH_THRESHOLD } from '../../../constants'
 import { openInternalPath } from '../../helpers/utils'
 import { translateWindowTitle } from '../../helpers/strings'
 import { clearLocalSearchSuggestionsSession, getLocalSearchSuggestions } from '../../helpers/api/local'
@@ -17,15 +16,13 @@ export default defineComponent({
   components: {
     FtIconButton,
     FtInput,
-    FtSearchFilters,
     FtProfileSelector
   },
   data: () => {
     return {
       component: this,
       showSearchContainer: true,
-      showFilters: false,
-      searchFilterValueChanged: false,
+      historyIndex: 1,
       isForwardOrBack: false,
       isArrowBackwardDisabled: true,
       isArrowForwardDisabled: true,
@@ -85,6 +82,10 @@ export default defineComponent({
       return this.$store.getters.getExpandSideBar
     },
 
+    searchFilterValueChanged: function () {
+      return this.$store.getters.getSearchFilterValueChanged
+    },
+
     forwardText: function () {
       return this.$t('Forward')
     },
@@ -115,7 +116,7 @@ export default defineComponent({
   },
   mounted: function () {
     let previousWidth = window.innerWidth
-    if (window.innerWidth <= 680) {
+    if (window.innerWidth <= MOBILE_WIDTH_THRESHOLD) {
       this.showSearchContainer = false
     }
 
@@ -130,7 +131,7 @@ export default defineComponent({
       // Don't change the status of showSearchContainer if only the height of the window changes
       // Opening the virtual keyboard can trigger this resize event, but it won't change the width
       if (previousWidth !== window.innerWidth) {
-        this.showSearchContainer = window.innerWidth > 680
+        this.showSearchContainer = window.innerWidth > MOBILE_WIDTH_THRESHOLD
         previousWidth = window.innerWidth
       }
     })
@@ -141,7 +142,7 @@ export default defineComponent({
     goToSearch: async function (query, { event }) {
       const doCreateNewWindow = event && event.shiftKey
 
-      if (window.innerWidth <= 680) {
+      if (window.innerWidth <= MOBILE_WIDTH_THRESHOLD) {
         this.$refs.searchContainer.blur()
         this.showSearchContainer = false
       } else {
@@ -225,7 +226,8 @@ export default defineComponent({
                 sortBy: this.searchSettings.sortBy,
                 time: this.searchSettings.time,
                 type: this.searchSettings.type,
-                duration: this.searchSettings.duration
+                duration: this.searchSettings.duration,
+                features: this.searchSettings.features,
               },
               doCreateNewWindow,
               searchQueryText: query
@@ -233,9 +235,6 @@ export default defineComponent({
           }
         }
       })
-
-      // Close the filter panel
-      this.showFilters = false
     },
 
     focusSearch: function () {
@@ -312,11 +311,6 @@ export default defineComponent({
 
     toggleSearchContainer: function () {
       this.showSearchContainer = !this.showSearchContainer
-      this.showFilters = false
-    },
-
-    handleSearchFilterValueChanged: function (filterValueChanged) {
-      this.searchFilterValueChanged = filterValueChanged
     },
 
     navigateHistory: function (toRoute) {
@@ -382,14 +376,12 @@ export default defineComponent({
     navigate: function (route) {
       this.$router.push('/' + route)
     },
-    hideFilters: function () {
-      this.showFilters = false
-    },
     updateSearchInputText: function (text) {
       this.$refs.searchInput.updateInputData(text)
     },
     ...mapActions([
       'getYoutubeUrlInfo',
+      'showSearchFilters'
     ])
   }
 })

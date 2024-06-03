@@ -11,6 +11,7 @@ import {
 } from '../../helpers/utils'
 import { getLocalSearchContinuation, getLocalSearchResults } from '../../helpers/api/local'
 import { invidiousAPICall } from '../../helpers/api/invidious'
+import { SEARCH_CHAR_LIMIT } from '../../../constants'
 
 export default defineComponent({
   name: 'Search',
@@ -54,11 +55,17 @@ export default defineComponent({
       // react to route changes...
 
       const query = this.$route.params.query
+      let features = this.$route.query.features
+      // if page gets refreshed and there's only one feature then it will be a string
+      if (typeof features === 'string') {
+        features = [features]
+      }
       const searchSettings = {
         sortBy: this.$route.query.sortBy,
         time: this.$route.query.time,
         type: this.$route.query.type,
-        duration: this.$route.query.duration
+        duration: this.$route.query.duration,
+        features: features,
       }
 
       const payload = {
@@ -75,11 +82,18 @@ export default defineComponent({
   mounted: function () {
     this.query = this.$route.params.query
 
+    let features = this.$route.query.features
+    // if page gets refreshed and there's only one feature then it will be a string
+    if (typeof features === 'string') {
+      features = [features]
+    }
+
     this.searchSettings = {
       sortBy: this.$route.query.sortBy,
       time: this.$route.query.time,
       type: this.$route.query.type,
-      duration: this.$route.query.duration
+      duration: this.$route.query.duration,
+      features: features,
     }
 
     const payload = {
@@ -92,6 +106,12 @@ export default defineComponent({
   },
   methods: {
     checkSearchCache: function (payload) {
+      if (payload.query.length > SEARCH_CHAR_LIMIT) {
+        console.warn(`Search character limit is: ${SEARCH_CHAR_LIMIT}`)
+        showToast(this.$t('Search character limit', { searchCharacterLimit: SEARCH_CHAR_LIMIT }))
+        return
+      }
+
       const sameSearch = this.sessionSearchHistory.filter((search) => {
         return search.query === payload.query && searchFiltersMatch(payload.searchSettings, search.searchSettings)
       })
@@ -206,7 +226,8 @@ export default defineComponent({
           sort_by: payload.searchSettings.sortBy,
           date: payload.searchSettings.time,
           duration: payload.searchSettings.duration,
-          type: payload.searchSettings.type
+          type: payload.searchSettings.type,
+          features: payload.searchSettings.features.join(',')
         }
       }
 
