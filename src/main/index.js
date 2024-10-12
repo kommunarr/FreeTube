@@ -73,6 +73,13 @@ function runApp() {
         click: () => {
           browserWindow.webContents.selectAll()
         }
+      },
+      {
+        label: 'Paste and Go',
+        visible: parameters.formControlType === 'input-search',
+        click: () => {
+          defaultActions.paste(clipboard.readText('clipboard'))
+        }
       }
     ],
     // only show the copy link entry for external links and the /playlist, /channel and /watch in-app URLs
@@ -455,7 +462,7 @@ function runApp() {
           requestHeaders.Authorization = invidiousAuthorization.authorization
         }
       }
-       
+
       callback({ requestHeaders })
     })
 
@@ -466,7 +473,7 @@ function runApp() {
       if (responseHeaders) {
         delete responseHeaders['set-cookie']
       }
-       
+
       callback({ responseHeaders })
     })
 
@@ -757,7 +764,7 @@ function runApp() {
     // If called multiple times
     // Duplicate menu items will be added
     if (replaceMainWindow) {
-       
+
       setMenu()
     }
 

@@ -83,6 +83,7 @@
           ref="searchInput"
           :placeholder="$t('Search / Go to URL')"
           class="searchInput"
+          :input-type="'search'"
           :is-search="true"
           :data-list="searchSuggestionsDataList"
           :spellcheck="false"
