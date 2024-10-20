@@ -19,12 +19,6 @@
           @change="updateEnableSubtitlesByDefault"
         />
         <ft-toggle-switch
-          :label="$t('Settings.Player Settings.Enable Theatre Mode by Default')"
-          :compact="true"
-          :default-value="defaultTheatreMode"
-          @change="updateDefaultTheatreMode"
-        />
-        <ft-toggle-switch
           :label="$t('Settings.Player Settings.Scroll Volume Over Video Player')"
           :compact="true"
           :disabled="videoSkipMouseScroll"
@@ -134,6 +128,14 @@
         :select-values="playbackRateIntervalValues"
         :icon="['fas', 'gauge']"
         @change="updateVideoPlaybackRateInterval"
+      />
+      <ft-select
+        :placeholder="$t('Settings.Player Settings.Default Viewing Mode.Default Viewing Mode')"
+        :value="defaultViewingMode"
+        :select-names="viewingModeNames"
+        :select-values="viewingModeValues"
+        :icon="['fas', 'display']"
+        @change="updateDefaultViewingMode"
       />
     </ft-flex-box>
     <ft-flex-box>

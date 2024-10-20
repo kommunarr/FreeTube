@@ -68,6 +68,7 @@ export default defineComponent({
     return {
       isLoading: true,
       firstLoad: true,
+      viewingModeOnFirstLoad: null,
       useTheatreMode: false,
       videoPlayerLoaded: false,
       isFamilyFriendly: false,
@@ -161,8 +162,19 @@ export default defineComponent({
     defaultInterval: function () {
       return this.$store.getters.getDefaultInterval
     },
-    defaultTheatreMode: function () {
-      return this.$store.getters.getDefaultTheatreMode
+    defaultViewingMode: function () {
+      const baseDefaultViewingMode =  this.$store.getters.getDefaultViewingMode
+      switch (baseDefaultViewingMode) {
+        case 'theatre':
+          return this.theatrePossible ? baseDefaultViewingMode : 'default'
+        case 'external_player':
+          return this.externalPlayer !== '' ? baseDefaultViewingMode : 'default'
+        default:
+          return baseDefaultViewingMode
+      }
+    },
+    externalPlayer: function () {
+      return this.$store.getters.getExternalPlayer
     },
     defaultVideoFormat: function () {
       return this.$store.getters.getDefaultVideoFormat
@@ -311,7 +323,8 @@ export default defineComponent({
       this.checkIfPlaylist()
 
       // this has to be below checkIfPlaylist() as theatrePossible needs to know if there is a playlist or not
-      this.useTheatreMode = this.defaultTheatreMode && this.theatrePossible
+      this.viewingModeOnFirstLoad = this.defaultViewingMode
+      this.useTheatreMode = this.viewingModeOnFirstLoad === 'theatre'
 
       if (!process.env.SUPPORTS_LOCAL_API || this.backendPreference === 'invidious') {
         this.getVideoInformationInvidious()

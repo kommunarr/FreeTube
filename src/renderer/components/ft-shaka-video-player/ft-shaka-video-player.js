@@ -103,6 +103,10 @@ export default defineComponent({
       type: Boolean,
       default: false
     },
+    viewingModeOnFirstLoad: {
+      type: String,
+      default: 'default'
+    },
     vrProjection: {
       type: String,
       default: null
@@ -139,10 +143,13 @@ export default defineComponent({
     const isLive = ref(false)
 
     const useOverFlowMenu = ref(false)
-    const fullWindowEnabled = ref(false)
+    const fullWindowEnabled = ref(props.viewingModeOnFirstLoad === 'fullwindow')
     const forceAspectRatio = ref(false)
 
     const activeLegacyFormat = shallowRef(null)
+
+    // toggleFullScreen ( ) : any ;
+    // togglePiP
 
     /**
      * @type {{
@@ -2349,6 +2356,14 @@ export default defineComponent({
       registerFullWindowButton()
       registerLegacyQualitySelection()
       registerStatsButton()
+      
+      // console.log('ZZZ: ' + props.viewingModeOnFirstLoad)
+      if (props.viewingModeOnFirstLoad === 'pip' && controls.isPiPAllowed() && !controls.isPiPEnabled()) {
+        controls.togglePiP()
+      } else if (props.viewingModeOnFirstLoad === 'fullscreen' && !controls.isFullScreenEnabled()) {
+        controls.toggleFullScreen()
+      }
+      // else if (props.viewingModeOnFirstLoad === 'external')
 
       if (ui.isMobile()) {
         useOverFlowMenu.value = true
