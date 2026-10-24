@@ -11,6 +11,10 @@
 .tabs {
   inline-size: 100%;
   margin-block: -3px 10px;
+  position: sticky;
+  inset-block-start: 104px;
+  z-index: 3;
+  background-color: var(--card-bg-color);
   color: var(--tertiary-text-color);
 }
 
@@ -41,5 +45,19 @@
 @media only screen and (width <= 680px) {
   .card {
     inline-size: 90%;
+  }
+
+  .tabs {
+    inset-block-start: 110px;
+  }
+
+  .card:has(.lastRefreshTimestamp) .tabs {
+    inset-block-start: 140px;
+  }
+}
+
+@media only screen and (width > 680px) and (width <= 720px) {
+  .app.isSideNavOpen .card:has(.lastRefreshTimestamp) .tabs {
+    inset-block-start: 110px;
   }
 }
