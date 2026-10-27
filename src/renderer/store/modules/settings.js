@@ -155,6 +155,8 @@ const defaultMutationId = settingId => 'set' + capitalize(settingId)
 export const defaultUpdaterId = settingId => 'update' + capitalize(settingId)
 const defaultSideEffectsTriggerId = settingId =>
   'trigger' + capitalize(settingId) + 'SideEffects'
+const normalizePlaybackRate = value =>
+  Number.isFinite(value) ? Number(value.toFixed(2)) : value
 /*****/
 
 const state = {
@@ -416,7 +418,7 @@ const sideEffectHandlers = {
   },
 
   videoPlaybackRateInterval: ({ dispatch, state }, value) => {
-    const correctedDefaultPlaybackRate = value * Math.round(state.defaultPlayback / value)
+    const correctedDefaultPlaybackRate = normalizePlaybackRate(value * Math.round(state.defaultPlayback / value))
 
     if (state.defaultPlayback !== correctedDefaultPlaybackRate) {
       dispatch('updateDefaultPlayback', correctedDefaultPlaybackRate)
@@ -460,7 +462,11 @@ const customState = {
 const customGetters = {
 }
 
-const customMutations = {}
+const customMutations = {
+  setDefaultPlayback: (state, value) => {
+    state.defaultPlayback = normalizePlaybackRate(value)
+  }
+}
 
 const customActions = {
   grabUserSettings: async ({ commit, dispatch, state }) => {
