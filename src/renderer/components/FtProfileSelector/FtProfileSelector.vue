@@ -74,7 +74,7 @@
             class="profileName"
             dir="auto"
           >
-            {{ translateProfileName(profile) }}
+            <span class="profileNameText">{{ translateProfileName(profile) }}</span>
           </p>
         </div>
       </div>

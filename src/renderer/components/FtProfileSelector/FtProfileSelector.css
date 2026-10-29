@@ -24,8 +24,8 @@
   position: absolute;
   inset-block-start: 60px;
   inset-inline-end: 10px;
-  min-inline-size: 250px;
-  max-inline-size: 90vw;
+  min-inline-size: min(250px, calc(100vw - 36px));
+  max-inline-size: min(350px, 90vw, calc(100vw - 36px));
   block-size: auto;
   padding: 5px;
   background-color: var(--card-bg-color);
@@ -77,6 +77,13 @@ Height adjust for profile list so it won't cover navbar.  */
   align-items: center;
   block-size: 50px;
   padding-inline-end: 10px;
+}
+
+.profileNameText {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .profileListTitle {
